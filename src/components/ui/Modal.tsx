@@ -1,17 +1,26 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { Button } from './Button';
 
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   size?: 'xs' | 'sm' | 'base' | 'l' | 'xl' | 'full';
   variant?: 'default' | 'centered' | 'drawer';
   showCloseButton?: boolean;
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
+  // Modal Header 제어
+  showTitle?: boolean;
   title?: string;
+  // Modal Body & Footer
+  content?: string;
+  leftButtonText?: string;
+  rightButtonText?: string;
+  onLeftButtonClick?: () => void;
+  onRightButtonClick?: () => void;
   className?: string;
 }
 
@@ -25,7 +34,13 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     showCloseButton = true,
     closeOnOverlayClick = true,
     closeOnEscape = true,
+    showTitle = true,
     title,
+    content,
+    leftButtonText,
+    rightButtonText,
+    onLeftButtonClick,
+    onRightButtonClick,
     className = '',
     ...props
   }, ref) => {
@@ -59,14 +74,14 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
 
     if (!isOpen) return null;
 
-    // 사이즈별 클래스
+    // 사이즈별 클래스 (최소 사이즈 343px×230px 적용)
     const sizeClasses = {
-      xs: 'max-w-xs',
-      sm: 'max-w-sm',
-      base: 'max-w-md',
-      l: 'max-w-lg',
-      xl: 'max-w-xl',
-      full: 'max-w-full mx-4'
+      xs: 'w-[343px] max-w-xs',
+      sm: 'w-full max-w-sm',
+      base: 'w-full max-w-md',
+      l: 'w-full max-w-lg',
+      xl: 'w-full max-w-xl',
+      full: 'w-full max-w-full mx-4'
     };
 
     // Variant별 클래스
@@ -76,15 +91,32 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       drawer: 'fixed inset-0 z-50 flex items-end justify-center'
     };
 
-    // 모달 콘텐츠 클래스
+    // 모달 콘텐츠 클래스 (가로 최소 사이즈만 적용, 세로는 컨텐츠에 맞춰 자동 조절)
     const contentClasses = {
-      default: 'bg-background border border-border rounded-lg shadow-lg',
-      centered: 'bg-background border border-border rounded-lg shadow-lg',
-      drawer: 'bg-background border-t border-border rounded-t-lg shadow-lg w-full max-h-[80vh]'
+      default: 'bg-card border border-border rounded-lg shadow-lg min-w-[343px]',
+      centered: 'bg-card border border-border rounded-lg shadow-lg min-w-[343px]',
+      drawer: 'bg-card border-t border-border rounded-t-lg shadow-lg w-full max-h-[80vh] min-w-[343px]'
     };
 
     const handleOverlayClick = (e: React.MouseEvent) => {
       if (closeOnOverlayClick && e.target === e.currentTarget) {
+        onClose();
+      }
+    };
+
+    // 기본 왼쪽/오른쪽 버튼 핸들러
+    const handleLeftButton = () => {
+      if (onLeftButtonClick) {
+        onLeftButtonClick();
+      } else {
+        onClose();
+      }
+    };
+
+    const handleRightButton = () => {
+      if (onRightButtonClick) {
+        onRightButtonClick();
+      } else {
         onClose();
       }
     };
@@ -101,41 +133,107 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
         
         {/* 모달 콘텐츠 */}
         <div className={`relative ${sizeClasses[size]} ${contentClasses[variant]} ${className}`}>
-          {/* 헤더 (타이틀이나 닫기 버튼이 있을 때) */}
-          {(title || showCloseButton) && (
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              {title && (
-                <h2 className="text-label-lg-css font-semibold text-foreground">
-                  {title}
-                </h2>
-              )}
-              {showCloseButton && (
-                <button
-                  onClick={onClose}
-                  className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  aria-label="Close modal"
-                >
+          <div className={`${((showTitle && title) || showCloseButton) ? 'pt-4' : 'pt-8'} pr-4 pb-7 pl-4 space-y-6`}>
+            
+            {/* Modal Header */}
+            {((showTitle && title) || showCloseButton) && (
+              <div className={`flex items-center ${(showTitle && title) ? 'justify-between' : 'justify-end'}`}>
+                {showTitle && title && (
+                  <h2 className="text-heading-md-css font-semibold text-card-foreground">
+                    {title}
+                  </h2>
+                )}
+                {showCloseButton && (
+                  <button
+                    onClick={onClose}
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    aria-label="Close modal"
+                  >
+                    <svg 
+                      className="w-5 h-5" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M6 18L18 6M6 6l12 12" 
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Modal Body */}
+            {(content || children) && (
+              <div className="flex flex-col items-center space-y-4">
+                {/* Exclamation Icon */}
+                <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center">
                   <svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    stroke="currentColor" 
+                    className="w-6 h-6 text-white" 
+                    fill="currentColor" 
                     viewBox="0 0 24 24"
                   >
                     <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M6 18L18 6M6 6l12 12" 
+                      fillRule="evenodd" 
+                      d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zM12 7a1 1 0 011 1v4a1 1 0 11-2 0V8a1 1 0 011-1zm0 8a1 1 0 100 2 1 1 0 000-2z" 
+                      clipRule="evenodd" 
                     />
                   </svg>
-                </button>
-              )}
-            </div>
-          )}
-          
-          {/* 모달 본문 */}
-          <div className={`${(title || showCloseButton) ? 'p-6' : 'p-6'}`}>
-            {children}
+                </div>
+                
+                {/* Content */}
+                {content && (
+                  <div className="text-center">
+                    <p className="text-body-md-css text-card-foreground">
+                      {content}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Custom children content */}
+                {children && !content && (
+                  <div className="text-center">
+                    {children}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Modal Footer */}
+            {(leftButtonText || rightButtonText) && (
+              <div className="flex gap-2 justify-center">
+                {leftButtonText && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleLeftButton}
+                  >
+                    {leftButtonText}
+                  </Button>
+                )}
+                {rightButtonText && (
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={handleRightButton}
+                  >
+                    {rightButtonText}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Custom children when no structured content */}
+            {!content && !leftButtonText && !rightButtonText && children && (
+              <div>
+                {children}
+              </div>
+            )}
+
           </div>
         </div>
       </div>

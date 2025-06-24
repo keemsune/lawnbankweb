@@ -193,10 +193,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const allClasses = [
       baseClasses,
       currentSizeClasses,
-      colorStyles.default,
-      colorStyles.hover,
-      colorStyles.active,
-      colorStyles.disabled,
+      typeof colorStyles === 'object' ? colorStyles.default : colorStyles,
+      typeof colorStyles === 'object' ? colorStyles.hover : '',
+      typeof colorStyles === 'object' ? colorStyles.active : '',
+      typeof colorStyles === 'object' ? colorStyles.disabled : '',
       fullWidth && 'w-full',
       (disabled || isLoading) && 'cursor-not-allowed',
       className
