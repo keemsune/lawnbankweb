@@ -98,7 +98,7 @@ export class HomepageApiService {
         console.log('🔑 사용 중인 토큰:', this.TOKEN.substring(0, 50) + '...');
         
         // 상담 데이터를 홈페이지 API 형식으로 변환
-        const apiRequest = this.transformToApiRequest(consultationData);
+        const apiRequest = await this.transformToApiRequest(consultationData);
         
         console.log('홈페이지 API 요청:', apiRequest);
         
@@ -155,7 +155,7 @@ export class HomepageApiService {
         console.error(`홈페이지 API 호출 실패 (${attempt}번째 시도):`, error);
         
         const errorMessage = error instanceof Error ? error.message : String(error);
-        const apiRequest = this.transformToApiRequest(consultationData);
+        const apiRequest = await this.transformToApiRequest(consultationData);
         
         // 마지막 시도인 경우 최종 실패 알림 및 에러 던지기
         if (attempt === maxRetries) {
@@ -434,26 +434,28 @@ export class HomepageApiService {
   }
 
   /**
-   * 회생터치 번호 생성 (최대값 + 1 방식)
+   * 회생터치 번호 생성 (최대값 + 1 방식) - Supabase에서 조회
    */
-  private static getNextConsultationNumber(): string {
+  private static async getNextConsultationNumber(): Promise<string> {
     try {
-      // DiagnosisDataManager를 동적으로 import
-      const { DiagnosisDataManager } = require('@/lib/diagnosis/database');
+      // Supabase에서 모든 레코드 조회
+      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
+      const records = await SupabaseDiagnosisService.getAllRecords();
       
-      const records = DiagnosisDataManager.getAllRecords();
       const existingNumbers = records
-        .map((record: any) => record.contactInfo?.name)
+        .map((record: any) => record.customer_name)
         .filter((name: string) => name && name.startsWith('회생터치'))
         .map((name: string) => parseInt(name.replace('회생터치', ''), 10))
-        .filter((num: number) => num > 0);
+        .filter((num: number) => !isNaN(num) && num > 0);
 
       const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+      console.log('🔢 회생터치 번호 생성:', `회생터치${maxNumber + 1}`, '(기존 최대값:', maxNumber, ')');
       return `회생터치${maxNumber + 1}`;
     } catch (error) {
-      console.error('회생터치 번호 생성 실패:', error);
+      console.error('❌ 회생터치 번호 생성 실패:', error);
       // 실패시 타임스탬프 기반 백업
       const fallback = Date.now() % 10000;
+      console.log('⚠️ 백업 번호 사용:', `회생터치${fallback}`);
       return `회생터치${fallback}`;
     }
   }
@@ -461,7 +463,7 @@ export class HomepageApiService {
   /**
    * 상담 데이터를 홈페이지 API 형식으로 변환
    */
-  private static transformToApiRequest(consultationData: ConsultationData): HomepageApiRequest {
+  private static async transformToApiRequest(consultationData: ConsultationData): Promise<HomepageApiRequest> {
     // 거주지역 매핑 (홈페이지 드롭다운 리스트와 일치하도록 정식 명칭 사용)
     const regionMap: { [key: string]: string } = {
       'seoul': '서울특별시',
@@ -489,8 +491,8 @@ export class HomepageApiService {
     // 거주지역 변환
     const livingPlace = regionMap[consultationData.residence] || consultationData.residence;
     
-    // 회생터치 번호 생성
-    const consultationName = this.getNextConsultationNumber();
+    // 회생터치 번호 생성 (async)
+    const consultationName = await this.getNextConsultationNumber();
     
     // 메모 생성 (신청시간, 고객이름, 거주지역, 상담유형)
     const consultationTypeText = consultationData.consultationType === 'phone' ? '전화상담' : '방문상담';
