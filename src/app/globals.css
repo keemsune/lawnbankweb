@@ -2,11 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* === 모바일 안전 영역 고려 === */
+:root {
+  --vh: 1vh;
+  --mobile-vh: calc(var(--vh, 1vh) * 100);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 모바일에서 실제 뷰포트 높이 계산 */
+@media (max-width: 768px) {
+  :root {
+    --mobile-vh: calc(100vh - var(--safe-area-inset-bottom));
+  }
+}
+
+/* === 커스텀 애니메이션 === */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* === 폰트 정의 === */
 @font-face {
     font-family: 'RiaSans-ExtraBold';
     src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2410-1@1.0/RiaSans-ExtraBold.woff2') format('woff2');
     font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'RiaSans-Light';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2410-1@1.0/RiaSans-Light.woff2') format('woff2');
+    font-weight: 300;
     font-style: normal;
     font-display: swap;
 }
@@ -33,14 +67,14 @@
   --color-red-50: #FEF2F2;
   --color-red-100: #FEE2E2;
   --color-red-200: #FECACA;
-  --color-red-300: #F87171;
-  --color-red-400: #EF4444;
-  --color-red-500: #DC2626;
-  --color-red-600: #B91C1C;
-  --color-red-700: #991B1B;
-  --color-red-800: #7F1D1D;
-  --color-red-900: #450A0A;
-  --color-red-950: #4C0519;
+  --color-red-300: #FCA5A5;
+  --color-red-400: #F87171;
+  --color-red-500: #EF4444;
+  --color-red-600: #DC2626;
+  --color-red-700: #B91C1C;
+  --color-red-800: #991B1B;
+  --color-red-900: #7F1D1D;
+  --color-red-950: #450A0A;
   
   /* Pink Scale */
   --color-pink-50: #FDF2F8;
@@ -332,7 +366,7 @@ body {
     font-size: var(--text-heading-lg);
     line-height: 28px;
     letter-spacing: 0em;
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold) !important;
   }
   
   .text-heading-md-css {
@@ -440,6 +474,15 @@ body {
     font-weight: 800;
   }
   
+  /* 섹션 타이틀 전용 클래스 (48px/64px) */
+  .text-section-title-css {
+    font-family: var(--font-title);
+    font-size: var(--text-title-lg);
+    line-height: 64px;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+  }
+  
   /* Label 타이포그래피 CSS 유틸리티 */
   .text-label-xl-css {
     font-size: var(--text-label-xl);
@@ -475,4 +518,93 @@ body {
     letter-spacing: 0em;
     font-weight: var(--font-weight-medium);
   }
-} 
+  
+  /* Caption 타이포그래피 CSS 유틸리티 */
+  .text-caption-lg-css {
+    font-size: var(--text-caption-lg);
+    line-height: 20px;
+    letter-spacing: 0em;
+    font-weight: var(--font-weight-normal);
+  }
+  
+  .text-caption-md-css {
+    font-size: var(--text-caption-md);
+    line-height: 16px;
+    letter-spacing: 0em;
+    font-weight: var(--font-weight-normal);
+  }
+  
+  .text-caption-sm-css {
+    font-size: var(--text-caption-sm);
+    line-height: 16px;
+    letter-spacing: 0em;
+    font-weight: var(--font-weight-normal);
+  }
+  
+  .text-caption-xs-css {
+    font-size: var(--text-caption-xs);
+    line-height: 14px;
+    letter-spacing: 0em;
+    font-weight: var(--font-weight-normal);
+  }
+  
+  /* 커스텀 Shadow 유틸리티 */
+  .shadow-sm-custom {
+    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.08);
+  }
+  
+  .shadow-custom {
+    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px -1px rgba(0, 0, 0, 0.10);
+  }
+  
+  .shadow-md-custom {
+    box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.10), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .shadow-lg-custom {
+    box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.10), 0px 4px 6px 0px rgba(0, 0, 0, 0.05);
+  }
+  
+  .shadow-xl-custom {
+    box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.10), 0px 10px 10px 0px rgba(0, 0, 0, 0.04);
+  }
+  
+  .shadow-2xl-custom {
+    box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* 컬러 Shadow 유틸리티 */
+  .shadow-emerald-600 {
+    box-shadow: 0px 10px 15px -3px rgba(5, 150, 105, 0.50), 0px 4px 6px 0px rgba(5, 150, 105, 0.50);
+  }
+  
+  .shadow-indigo-600 {
+    box-shadow: 0px 10px 15px -3px rgba(79, 70, 229, 0.50), 0px 4px 6px 0px rgba(79, 70, 229, 0.50);
+  }
+  
+  .shadow-violet-600 {
+    box-shadow: 0px 10px 15px -3px rgba(124, 58, 237, 0.50), 0px 4px 6px 0px rgba(124, 58, 237, 0.50);
+  }
+  
+  .shadow-pink-500 {
+    box-shadow: 0px 10px 15px -3px rgba(236, 72, 153, 0.50), 0px 4px 6px 0px rgba(236, 72, 153, 0.50);
+  }
+  
+  .shadow-red-500 {
+    box-shadow: 0px 10px 15px -3px rgba(220, 38, 38, 0.50), 0px 4px 6px 0px rgba(220, 38, 38, 0.50);
+  }
+  
+  .shadow-amber-500 {
+    box-shadow: 0px 10px 15px -3px rgba(245, 158, 11, 0.50), 0px 4px 6px 0px rgba(245, 158, 11, 0.50);
+  }
+  
+  /* 이미지 모양에 따른 drop shadow */
+  .drop-shadow-amber {
+    filter: drop-shadow(0px 8px 12px rgba(245, 158, 11, 0.50)) drop-shadow(0px 3px 5px rgba(245, 158, 11, 0.50));
+  }
+
+  .text-accent-foreground { color: var(--color-accent-foreground) !important; }
+  .bg-accent { background-color: var(--color-accent) !important; }
+  .text-accent { color: var(--color-accent) !important; }
+  .bg-accent-foreground { background-color: var(--color-accent-foreground) !important; }
+}

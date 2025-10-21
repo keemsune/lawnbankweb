@@ -16,6 +16,7 @@ export interface ModalProps {
   showTitle?: boolean;
   title?: string;
   // Modal Body & Footer
+  showExclamation?: boolean;
   content?: string;
   leftButtonText?: string;
   rightButtonText?: string;
@@ -36,6 +37,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     closeOnEscape = true,
     showTitle = true,
     title,
+    showExclamation = true,
     content,
     leftButtonText,
     rightButtonText,
@@ -171,19 +173,21 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
             {(content || children) && (
               <div className="flex flex-col items-center space-y-4">
                 {/* Exclamation Icon */}
-                <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center">
-                  <svg 
-                    className="w-6 h-6 text-white" 
-                    fill="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      fillRule="evenodd" 
-                      d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zM12 7a1 1 0 011 1v4a1 1 0 11-2 0V8a1 1 0 011-1zm0 8a1 1 0 100 2 1 1 0 000-2z" 
-                      clipRule="evenodd" 
-                    />
-                  </svg>
-                </div>
+                {showExclamation && (
+                  <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center">
+                    <svg 
+                      className="w-6 h-6 text-white" 
+                      fill="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        fillRule="evenodd" 
+                        d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zM12 7a1 1 0 011 1v4a1 1 0 11-2 0V8a1 1 0 011-1zm0 8a1 1 0 100 2 1 1 0 000-2z" 
+                        clipRule="evenodd" 
+                      />
+                    </svg>
+                  </div>
+                )}
                 
                 {/* Content */}
                 {content && (

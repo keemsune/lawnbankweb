@@ -48,7 +48,7 @@ export default function ColorSystemDemo() {
                 <span className="text-destructive-foreground font-medium">Destructive</span>
               </div>
               <p className="text-sm text-muted-foreground">경고/삭제</p>
-              <p className="text-xs font-mono text-gray-500">red-500 / #DC2626</p>
+              <p className="text-xs font-mono text-gray-500">red-500 / #EF4444</p>
             </div>
           </div>
           

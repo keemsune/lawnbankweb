@@ -24,12 +24,12 @@ export function Container({
         size === 'content' && 'max-w-content',
         size === 'full' && 'max-w-full',
         
-        // 반응형 패딩 (그리드 시스템 마진에 맞춤)
+        // 반응형 패딩 (우리 브레이크포인트 시스템에 맞춤)
         padding && [
-          'px-container-xs',  // 375px: 16px
-          'sm:px-container-sm', // 768px: 16px
-          'md:px-container-md', // 1024px: 32px
-          'lg:px-container-lg', // 1280px: 40px
+          'px-container-xs',      // 375px: 16px
+          'sm:px-container-sm',   // 768px: 24px (수정됨)
+          'md:px-container-md',   // 1024px: 32px
+          'lg:px-container-lg',   // 1280px: 40px
         ],
         
         className

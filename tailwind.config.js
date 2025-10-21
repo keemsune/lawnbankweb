@@ -8,10 +8,10 @@ module.exports = {
   theme: {
     screens: {
       'xs': '375px',
-      'sm': '768px',
-      'md': '1024px',
-      'lg': '1280px',
-      'xl': '1920px',
+      'sm': '640px', 
+      'md': '769px',
+      'lg': '1025px',
+      'xl': '1280px',
     },
     extend: {
       colors: {
@@ -39,14 +39,14 @@ module.exports = {
           50: '#FEF2F2',
           100: '#FEE2E2',
           200: '#FECACA',
-          300: '#F87171',
-          400: '#EF4444',
-          500: '#DC2626',
-          600: '#B91C1C',
-          700: '#991B1B',
-          800: '#7F1D1D',
-          900: '#450A0A',
-          950: '#4C0519',
+          300: '#FCA5A5',
+          400: '#F87171',
+          500: '#EF4444',
+          600: '#DC2626',
+          700: '#B91C1C',
+          800: '#991B1B',
+          900: '#7F1D1D',
+          950: '#450A0A',
         },
         
         // Pink Scale
@@ -161,6 +161,8 @@ module.exports = {
         
         // Background Colors
         background: '#FFFFFF',
+        'background-1': '#FFFFFF',
+        'background-2': '#E5E7EB',
         
         // Foreground Colors
         foreground: '#030712',
@@ -337,18 +339,18 @@ module.exports = {
       },
       gap: {
         'mobile': '16px',
-        'tablet': '24px',
+        'tablet': '16px',
         'desktop': '24px',
       },
       margin: {
         'container-xs': '16px',
-        'container-sm': '16px',
+        'container-sm': '24px',
         'container-md': '32px',
         'container-lg': '40px',
       },
       padding: {
         'container-xs': '16px',
-        'container-sm': '16px',
+        'container-sm': '24px',
         'container-md': '32px',
         'container-lg': '40px',
       },
@@ -374,6 +376,12 @@ module.exports = {
         '2': '2px',
         '4': '4px',
         '8': '8px',
+      },
+      
+      // 모바일 안전 높이 시스템
+      height: {
+        'mobile-safe': 'calc(100vh - env(safe-area-inset-bottom, 20px) - 80px)', // 더 보수적인 여유분
+        'mobile-full': 'calc(100vh - env(safe-area-inset-bottom, 20px) - 20px)',
       },
     },
   },

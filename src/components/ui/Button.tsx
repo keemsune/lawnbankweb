@@ -56,11 +56,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     // 사이즈별 클래스 (정확한 spacing 토큰 사용)
     const sizeClasses = {
-      xs: 'py-2 px-4 text-label-xs-css gap-2 min-h-[34px]',
-      sm: 'py-2 px-4 text-label-sm-css gap-2 min-h-[36px]',
-      base: 'py-2.5 px-5 text-label-sm-css gap-2 min-h-[40px]',
-      l: 'py-3 px-5 text-label-md-css gap-2 min-h-[48px]',
-      xl: 'py-3.5 px-6 text-label-md-css gap-2 min-h-[52px]'
+      xs: 'py-2 px-4 text-label-xs-css min-h-[34px]',
+      sm: 'py-2 px-4 text-label-sm-css min-h-[36px]',
+      base: 'py-2.5 px-5 text-label-sm-css min-h-[40px]',
+      l: 'py-3 px-5 text-label-md-css min-h-[48px]',
+      xl: 'py-3.5 px-6 text-label-md-css min-h-[52px]'
     };
 
     // iconOnly일 때 사이즈별 클래스 (정사각형 형태)
@@ -239,14 +239,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         
         {/* Icon Only 모드 */}
         {shouldShowIconOnly && (
-          <span className={`${iconSizes[size]} flex-shrink-0`}>
+          <span className={`${iconSizes[size]} flex-shrink-0 flex items-center justify-center`}>
             {leftIcon || rightIcon}
           </span>
         )}
         
         {/* 왼쪽 아이콘 */}
         {shouldShowLeftIcon && (
-          <span className={`${iconSizes[size]} flex-shrink-0`}>
+          <span className={`${iconSizes[size]} flex-shrink-0 mr-2 flex items-center justify-center`}>
             {leftIcon}
           </span>
         )}
@@ -260,7 +260,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         
         {/* 오른쪽 아이콘 */}
         {shouldShowRightIcon && (
-          <span className={`${iconSizes[size]} flex-shrink-0`}>
+          <span className={`${iconSizes[size]} flex-shrink-0 ml-2 flex items-center justify-center`}>
             {rightIcon}
           </span>
         )}
