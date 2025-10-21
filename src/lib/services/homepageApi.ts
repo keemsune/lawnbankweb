@@ -434,29 +434,35 @@ export class HomepageApiService {
   }
 
   /**
-   * 회생터치 번호 생성 (순차 증가 방식) - 간단한 카운터 사용
+   * 회생터치 번호 생성 (순차 증가 방식) - localStorage 기반 카운팅
    */
   private static async getNextConsultationNumber(): Promise<string> {
     try {
-      // 간단한 타임스탬프 기반 고유 번호 생성
-      // 형식: YYMMDDHHMMSS (12자리)
-      const now = new Date();
-      const year = now.getFullYear().toString().slice(-2);
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hour = String(now.getHours()).padStart(2, '0');
-      const minute = String(now.getMinutes()).padStart(2, '0');
-      const second = String(now.getSeconds()).padStart(2, '0');
+      // localStorage에서 기존 레코드 가져오기
+      const { DiagnosisDatabase } = await import('@/lib/diagnosis/database');
+      const allRecords = DiagnosisDatabase.getAllRecords();
       
-      const consultationNumber = `회생터치${year}${month}${day}${hour}${minute}${second}`;
-      console.log('🔢 회생터치 번호 생성:', consultationNumber);
-      return consultationNumber;
+      // "회생터치" 로 시작하는 모든 번호 추출
+      const existingNumbers = allRecords
+        .filter(record => record.contactInfo?.name && record.contactInfo.name.startsWith('회생터치'))
+        .map(record => {
+          const name = record.contactInfo!.name;
+          const numberPart = name.replace('회생터치', '');
+          return parseInt(numberPart, 10);
+        })
+        .filter(num => !isNaN(num) && num > 0);
+      
+      // 최대값 찾기
+      const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+      const nextNumber = maxNumber + 1;
+      
+      console.log('🔢 회생터치 번호 생성:', `회생터치${nextNumber}`, '(기존 최대값:', maxNumber, ')');
+      return `회생터치${nextNumber}`;
     } catch (error) {
       console.error('❌ 회생터치 번호 생성 실패:', error);
-      // 실패시 타임스탬프 기반 백업
-      const fallback = Date.now() % 100000000;
-      console.log('⚠️ 백업 번호 사용:', `회생터치${fallback}`);
-      return `회생터치${fallback}`;
+      // 실패시 1번부터 시작
+      console.log('⚠️ 백업 번호 사용: 회생터치1');
+      return '회생터치1';
     }
   }
   
