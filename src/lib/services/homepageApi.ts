@@ -434,19 +434,19 @@ export class HomepageApiService {
   }
 
   /**
-   * 회생터치 번호 생성 (순차 증가 방식) - localStorage 기반 카운팅
+   * 회생터치 번호 생성 (순차 증가 방식) - Supabase 기반 카운팅
    */
   private static async getNextConsultationNumber(): Promise<string> {
     try {
-      // localStorage에서 기존 레코드 가져오기
-      const { DiagnosisDataManager } = await import('@/lib/diagnosis/database');
-      const allRecords = DiagnosisDataManager.getAllRecords();
+      // Supabase에서 기존 레코드 가져오기 (서버/클라이언트 모두 작동)
+      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
+      const allRecords = await SupabaseDiagnosisService.getAllRecords();
       
       // "회생터치" 로 시작하는 모든 번호 추출
       const existingNumbers = allRecords
-        .filter(record => record.contactInfo?.name && record.contactInfo.name.startsWith('회생터치'))
+        .filter(record => record.customer_name && record.customer_name.startsWith('회생터치'))
         .map(record => {
-          const name = record.contactInfo!.name;
+          const name = record.customer_name!;
           const numberPart = name.replace('회생터치', '');
           return parseInt(numberPart, 10);
         })
