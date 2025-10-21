@@ -1,7 +1,6 @@
 // 진단 데이터 저장 및 관리 시스템
 
 import { CompleteDiagnosisData } from './service';
-import { SupabaseDiagnosisService } from '../supabase/diagnosisService';
 
 /**
  * 간편 상담 신청 데이터
@@ -282,10 +281,22 @@ export class DiagnosisDataManager {
     this.saveAllRecords(records);
     console.log('로컬 스토리지에 저장 완료');
     
-    // Supabase에도 저장
+    // Supabase에도 저장 (서버 API를 통해)
     try {
-      console.log('🔄 Supabase 저장 시작...');
-      const result = await SupabaseDiagnosisService.saveRecord(record);
+      console.log('🔄 Supabase 저장 시작 (서버 API 통해)...');
+      const response = await fetch('/api/supabase/saveRecord', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(record),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`서버 API 호출 실패: ${response.status}`);
+      }
+      
+      const result = await response.json();
       if (result.success) {
         console.log('✅ Supabase 저장 성공!');
       } else {
