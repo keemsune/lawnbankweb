@@ -434,27 +434,27 @@ export class HomepageApiService {
   }
 
   /**
-   * 회생터치 번호 생성 (최대값 + 1 방식) - Supabase에서 조회
+   * 회생터치 번호 생성 (순차 증가 방식) - 간단한 카운터 사용
    */
   private static async getNextConsultationNumber(): Promise<string> {
     try {
-      // Supabase에서 모든 레코드 조회
-      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
-      const records = await SupabaseDiagnosisService.getAllRecords();
+      // 간단한 타임스탬프 기반 고유 번호 생성
+      // 형식: YYMMDDHHMMSS (12자리)
+      const now = new Date();
+      const year = now.getFullYear().toString().slice(-2);
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hour = String(now.getHours()).padStart(2, '0');
+      const minute = String(now.getMinutes()).padStart(2, '0');
+      const second = String(now.getSeconds()).padStart(2, '0');
       
-      const existingNumbers = records
-        .map((record: any) => record.customer_name)
-        .filter((name: string) => name && name.startsWith('회생터치'))
-        .map((name: string) => parseInt(name.replace('회생터치', ''), 10))
-        .filter((num: number) => !isNaN(num) && num > 0);
-
-      const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
-      console.log('🔢 회생터치 번호 생성:', `회생터치${maxNumber + 1}`, '(기존 최대값:', maxNumber, ')');
-      return `회생터치${maxNumber + 1}`;
+      const consultationNumber = `회생터치${year}${month}${day}${hour}${minute}${second}`;
+      console.log('🔢 회생터치 번호 생성:', consultationNumber);
+      return consultationNumber;
     } catch (error) {
       console.error('❌ 회생터치 번호 생성 실패:', error);
       // 실패시 타임스탬프 기반 백업
-      const fallback = Date.now() % 10000;
+      const fallback = Date.now() % 100000000;
       console.log('⚠️ 백업 번호 사용:', `회생터치${fallback}`);
       return `회생터치${fallback}`;
     }
