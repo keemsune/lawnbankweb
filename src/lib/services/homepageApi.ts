@@ -439,8 +439,8 @@ export class HomepageApiService {
   private static async getNextConsultationNumber(): Promise<string> {
     try {
       // localStorage에서 기존 레코드 가져오기
-      const { DiagnosisDatabase } = await import('@/lib/diagnosis/database');
-      const allRecords = DiagnosisDatabase.getAllRecords();
+      const { DiagnosisDataManager } = await import('@/lib/diagnosis/database');
+      const allRecords = DiagnosisDataManager.getAllRecords();
       
       // "회생터치" 로 시작하는 모든 번호 추출
       const existingNumbers = allRecords
