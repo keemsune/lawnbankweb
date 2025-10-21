@@ -169,13 +169,26 @@ export class SupabaseDiagnosisService {
   }
 
   /**
+   * UTC 시간을 KST ISO 문자열로 변환
+   */
+  private static convertUTCtoKST(utcTimeString: string): string {
+    const utcDate = new Date(utcTimeString);
+    // UTC 시간에 9시간을 더해서 KST로 변환
+    const kstDate = new Date(utcDate.getTime() + (9 * 60 * 60 * 1000));
+    return kstDate.toISOString();
+  }
+
+  /**
    * DiagnosisRecordDB를 DiagnosisRecord로 변환
    */
   static convertToRecord(dbRecord: DiagnosisRecordDB): DiagnosisRecord {
+    // UTC를 KST로 변환
+    const createdAtKST = this.convertUTCtoKST(dbRecord.created_at);
+    
     const record: any = {
       id: dbRecord.id,
-      createdAt: dbRecord.created_at,
-      updatedAt: dbRecord.created_at,
+      createdAt: createdAtKST,
+      updatedAt: createdAtKST,
       status: 'completed',
       acquisitionSource: dbRecord.acquisition_source,
       isDuplicate: dbRecord.is_duplicate,
@@ -197,7 +210,7 @@ export class SupabaseDiagnosisService {
         comparisonText: '',
       },
       metadata: {
-        calculatedAt: dbRecord.created_at,
+        calculatedAt: createdAtKST,
         version: '1.0.0',
       },
       
