@@ -502,7 +502,7 @@ export class HomepageApiService {
     
     // 메모 생성 (신청시간, 고객이름, 거주지역, 상담유형)
     const consultationTypeText = consultationData.consultationType === 'phone' ? '전화상담' : '방문상담';
-    const currentTime = new Date().toLocaleString('ko-KR');
+    const currentTime = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
     const memo = `신청시간: ${currentTime}\n고객이름: ${consultationName}\n거주지역: ${livingPlace}\n상담유형: ${consultationTypeText}`;
      
     return {
