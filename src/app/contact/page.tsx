@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Headset, MapPin, Phone, Clock, ArrowRight, ChevronDown, MessageSquareText, CheckCircle, Info, ChevronRight } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import Image from 'next/image'
+import NaverMap from '@/components/ui/NaverMap'
 
 export default function ContactPage() {
   // 섹션2 간편상담신청 폼 상태
@@ -582,9 +583,12 @@ export default function ContactPage() {
           {/* 사무소 정보 */}
           <div className="flex flex-col md:grid md:grid-cols-2 gap-6 md:items-center">
             {/* 지도 - 모바일에서 먼저 표시 */}
-            <div className="w-full h-[380px] bg-gray-200 rounded-xl flex items-center justify-center order-1 md:order-2">
-              <p className="text-body-lg text-muted-foreground">지도가 여기에 표시됩니다</p>
-            </div>
+            <NaverMap 
+              office={activeOffice}
+              address={offices[activeOffice].address}
+              placeName={offices[activeOffice].name}
+              className="w-full h-[380px] rounded-xl order-1 md:order-2"
+            />
 
             {/* 텍스트 정보 - 모바일에서 나중에 표시 */}
             <div className="space-y-6 order-2 md:order-1">
