@@ -196,7 +196,7 @@ export class HomepageApiService {
   }
 
   /**
-   * 서버사이드 슬랙 알림 전송 (CORS 우회)
+   * 서버사이드 슬랙 알림 전송 (직접 호출)
    */
   private static async sendServerSideSlackNotification(data: {
     type: 'success' | 'error';
@@ -212,20 +212,35 @@ export class HomepageApiService {
     managerName?: string;
   }): Promise<void> {
     try {
-      const response = await fetch('/api/slack/notify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`서버사이드 슬랙 알림 실패: ${response.status} ${response.statusText}`);
+      // 서버사이드에서는 SlackNotificationService를 직접 호출
+      const { SlackNotificationService } = await import('./slackNotification');
+      
+      if (data.type === 'success') {
+        await SlackNotificationService.sendSuccessNotification({
+          customerName: data.customerName,
+          consultationType: data.consultationType,
+          acquisitionSource: data.acquisitionSource,
+          attempts: data.attempts,
+          phone: data.phone,
+          residence: data.residence,
+          isDuplicate: data.isDuplicate,
+          duplicateCount: data.duplicateCount,
+          managerName: data.managerName
+        });
+      } else {
+        await SlackNotificationService.sendErrorNotification({
+          customerName: data.customerName,
+          consultationType: data.consultationType,
+          acquisitionSource: data.acquisitionSource,
+          error: data.error || '알 수 없는 오류',
+          attempts: data.attempts,
+          phone: data.phone,
+          isDuplicate: data.isDuplicate,
+          duplicateCount: data.duplicateCount
+        });
       }
-
-      const result = await response.json();
-      console.log('서버사이드 슬랙 알림 전송 성공:', result.message);
+      
+      console.log('서버사이드 슬랙 알림 전송 성공');
     } catch (error) {
       console.error('서버사이드 슬랙 알림 전송 오류:', error);
       // 슬랙 알림 실패는 메인 프로세스에 영향을 주지 않음
