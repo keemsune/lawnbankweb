@@ -123,7 +123,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
               <Button
                 type="submit"
                 variant="primary"
-                size="lg"
+                size="xl"
                 className="w-full"
               >
                 로그인
