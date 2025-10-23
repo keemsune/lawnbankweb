@@ -13,6 +13,7 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://revivetouch.lawandfirm.com'),
   title: '회생터치 - 회생파산 전문 법무법인 로앤',
   description: '5번의 터치로 찾는 나만의 채무 해결책. 개인회생 개인파산 13년 경력 전문 변호사.',
   openGraph: {
