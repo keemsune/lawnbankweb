@@ -75,7 +75,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50">
         <div className="text-gray-600">로딩 중...</div>
       </div>
     );
@@ -83,8 +83,8 @@ export default function AdminAuth({ children }: AdminAuthProps) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full">
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -141,8 +141,8 @@ export default function AdminAuth({ children }: AdminAuthProps) {
 
   return (
     <div>
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <div className="bg-white border-b border-gray-200 py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="text-sm text-gray-600">
             관리자로 로그인됨
           </div>

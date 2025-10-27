@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/Input'
 export default function FixedBottomBar() {
   const pathname = usePathname()
   
-  // 자가진단 관련 페이지에서는 하단고정바 숨김
-  if (pathname === '/diagnosis/test' || pathname === '/diagnosis') {
+  // 자가진단 관련 페이지 및 관리자 페이지에서는 하단고정바 숨김
+  if (pathname === '/diagnosis/test' || pathname === '/diagnosis' || pathname?.startsWith('/consultation/dashboard-')) {
     return null
   }
 

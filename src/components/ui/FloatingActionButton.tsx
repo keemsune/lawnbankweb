@@ -63,8 +63,8 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     };
   }, []);
   
-  // 자가진단 테스트 페이지에서는 FAB 숨김
-  if (pathname === '/diagnosis/test') {
+  // 자가진단 테스트 페이지 및 관리자 페이지에서는 FAB 숨김
+  if (pathname === '/diagnosis/test' || pathname?.startsWith('/consultation/dashboard-')) {
     return null;
   }
 

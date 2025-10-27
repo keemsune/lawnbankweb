@@ -33,7 +33,7 @@ export class SupabaseDiagnosisService {
       console.log('🔍 Supabase 저장할 DB 레코드:', dbRecord);
 
       const { data, error } = await supabase
-        .from('diagnosis_records')
+        .from('consultation_records')
         .insert([dbRecord])
         .select()
         .single();
@@ -57,7 +57,7 @@ export class SupabaseDiagnosisService {
   static async getAllRecords(): Promise<DiagnosisRecordDB[]> {
     try {
       const { data, error } = await supabase
-        .from('diagnosis_records')
+        .from('consultation_records')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -79,7 +79,7 @@ export class SupabaseDiagnosisService {
   static async getRecordById(id: string): Promise<DiagnosisRecordDB | null> {
     try {
       const { data, error } = await supabase
-        .from('diagnosis_records')
+        .from('consultation_records')
         .select('*')
         .eq('id', id)
         .single();
@@ -102,7 +102,7 @@ export class SupabaseDiagnosisService {
   static async checkDuplicateByPhone(phone: string): Promise<{ isDuplicate: boolean; count: number }> {
     try {
       const { data, error } = await supabase
-        .from('diagnosis_records')
+        .from('consultation_records')
         .select('id')
         .eq('phone', phone);
 
@@ -128,7 +128,7 @@ export class SupabaseDiagnosisService {
   static async updateRecord(id: string, updates: Partial<DiagnosisRecordDB>): Promise<{ success: boolean; error?: string }> {
     try {
       const { error } = await supabase
-        .from('diagnosis_records')
+        .from('consultation_records')
         .update(updates)
         .eq('id', id);
 
@@ -151,7 +151,7 @@ export class SupabaseDiagnosisService {
   static async deleteRecord(id: string): Promise<{ success: boolean; error?: string }> {
     try {
       const { error } = await supabase
-        .from('diagnosis_records')
+        .from('consultation_records')
         .delete()
         .eq('id', id);
 

@@ -137,8 +137,8 @@ export default function DiagnosisDashboard({ className }: DiagnosisDashboardProp
     <div className={`diagnosis-dashboard ${className || ''}`}>
       {/* 헤더 */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">진단 테스트 관리 대시보드</h1>
-        <p className="text-gray-600">사용자들의 진단 테스트 결과를 확인하고 관리할 수 있습니다.</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">상담 관리 대시보드</h1>
+        <p className="text-gray-600">사용자들의 진단 테스트 결과를 확인하고 상담을 관리할 수 있습니다.</p>
       </div>
 
       {/* 통계 카드 */}
@@ -296,7 +296,7 @@ export default function DiagnosisDashboard({ className }: DiagnosisDashboardProp
       <div className="bg-white rounded-lg shadow border overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
-            진단 기록 ({total}건)
+            리스트 ({total}건)
           </h2>
         </div>
         
@@ -490,32 +490,30 @@ export default function DiagnosisDashboard({ className }: DiagnosisDashboardProp
         )}
 
         {/* 페이지네이션 */}
-        {totalPages > 1 && (
-          <div className="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              전체 {total}건 중 {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, total)}건 표시
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                이전
-              </button>
-              <span className="px-3 py-1 text-sm">
-                {currentPage} / {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                다음
-              </button>
-            </div>
+        <div className="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            전체 {total}건 중 {total === 0 ? 0 : ((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, total)}건 표시
           </div>
-        )}
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              이전
+            </button>
+            <span className="px-3 py-1 text-sm">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              다음
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import DiagnosisDashboard from '@/components/admin/DiagnosisDashboard';
 import AdminAuth from '@/components/admin/AdminAuth';
 
-export default function DiagnosisAdminPage() {
+export default function ConsultationAdminPage() {
   return (
     <AdminAuth>
       <div className="min-h-screen bg-gray-50 py-8">
