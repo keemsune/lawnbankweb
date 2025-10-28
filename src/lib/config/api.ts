@@ -7,7 +7,7 @@ export const API_CONFIG = {
   HOMEPAGE_API: {
     BASE_URL: 'https://www.legalfriends.co.kr',
     ENDPOINT: '/api/bankruptcy/case/createForLawn',
-    TOKEN: process.env.NEXT_PUBLIC_HOMEPAGE_API_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHgiOjEzMywiaWQiOiJsYXdhbmQ2IiwidmVyIjoyMTEwOTIxLCJkZXZfdHlwZSI6MSwiYXVkIjoibGZ3IiwiZXhwIjoxNzYxMTI2MDk1LCJpc3MiOiJsZWdhbGZsb3cifQ.PR6q-HrmbU8aHBEuo9JMxzStbVe1K3zJSeJzwsXTtz8', // 새로운 토큰 (2025-10-22 업데이트)
+    TOKEN: process.env.NEXT_PUBLIC_HOMEPAGE_API_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHgiOjIxNzgsImlkIjoibGF3YW5kZmlybV9zMjAwIiwidmVyIjo2MjcwNzQsImF1ZCI6ImxmdyIsImV4cCI6NDg5Mjc3NTgyOSwiaXNzIjoibGVnYWxmbG93In0.Y7MOGguajJaLdxFLgfPs_I8iOmhzysjYIX1xIQJTr9o', // 실제 서버 토큰 (2025-10-28 업데이트)
   },
   
   // 슬랙 API 설정 (향후 사용)
