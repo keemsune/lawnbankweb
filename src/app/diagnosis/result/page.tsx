@@ -149,8 +149,21 @@ export default function DiagnosisResult() {
         acquisitionSource: acquisitionSource
       });
 
-      // 세션 스토리지에서 Supabase ID 가져오기
-      const supabaseId = sessionStorage.getItem('current_diagnosis_id');
+      // 세션 스토리지에서 Supabase ID 가져오기 (없으면 로컬 스토리지에서)
+      let supabaseId = sessionStorage.getItem('current_diagnosis_id');
+      
+      // 세션에 없으면 로컬 스토리지의 diagnosisResult에서 가져오기
+      if (!supabaseId) {
+        console.log('⚠️ 세션 스토리지에 ID 없음, 로컬 스토리지 확인...');
+        const savedResult = localStorage.getItem('diagnosisResult');
+        if (savedResult) {
+          const parsedResult = JSON.parse(savedResult);
+          supabaseId = parsedResult.supabaseId;
+          console.log('✅ 로컬 스토리지에서 가져온 Supabase ID:', supabaseId);
+        }
+      } else {
+        console.log('✅ 세션에서 가져온 Supabase ID:', supabaseId);
+      }
       
       if (!supabaseId) {
         console.error('❌ Supabase ID를 찾을 수 없습니다.');
@@ -158,8 +171,6 @@ export default function DiagnosisResult() {
         setIsSubmittingContact(false);
         return;
       }
-      
-      console.log('✅ 세션에서 가져온 Supabase ID:', supabaseId);
       
       // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용
       const result = await DiagnosisDataManager.updateContactInfoAndConversion(
