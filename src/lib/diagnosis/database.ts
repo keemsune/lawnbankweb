@@ -526,15 +526,14 @@ export class DiagnosisDataManager {
       return {
       id: record.id,
       createdAt: (() => {
-        // Supabase의 created_at을 그대로 포맷팅 (이미 UTC 시간)
-        const date = new Date(record.createdAt);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
-        return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
+        // ISO 문자열을 그대로 파싱 (2025-10-29T15:30:45.123Z -> 2025.10.29 15:30:45)
+        const isoString = record.createdAt;
+        // "2025-10-29T15:30:45.123Z" 형식에서 날짜와 시간 추출
+        const [datePart, timePart] = isoString.split('T');
+        const [year, month, day] = datePart.split('-');
+        const [hours, minutes, seconds] = timePart.split(':');
+        const sec = seconds.split('.')[0]; // 밀리초 제거
+        return `${year}.${month}.${day} ${hours}:${minutes}:${sec}`;
       })(),
         name: contactInfo.name || '-',
         phone: contactInfo.phone || '-',
