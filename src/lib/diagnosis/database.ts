@@ -393,6 +393,10 @@ export class DiagnosisDataManager {
     const duplicateInfo = this.checkDuplicateContact(phone);
     console.log('연락처 중복 체크 결과:', duplicateInfo);
     
+    // 회생터치 번호 생성 (테스트→상담전환 시, Supabase 기반)
+    const consultationName = await this.getNextConsultationNumberFromSupabase();
+    console.log('생성된 회생터치 번호:', consultationName);
+    
     // 홈페이지 API로 데이터 전송 (전환된 경우에만, 서버 API 라우트를 통해)
     if (acquisitionSource === '테스트_전환' || acquisitionSource === 'converted' || acquisitionSource === '결과_서비스혜택' || acquisitionSource === '결과_진행절차') {
       try {
@@ -402,7 +406,8 @@ export class DiagnosisDataManager {
           residence: residence || 'seoul',
           acquisitionSource: acquisitionSource,
           isDuplicate: duplicateInfo.isDuplicate,
-          duplicateCount: duplicateInfo.duplicateCount
+          duplicateCount: duplicateInfo.duplicateCount,
+          consultationName: consultationName // 생성된 회생터치 번호 전달
         };
         
         console.log('홈페이지 API 호출 시작 (전환, 서버 라우트 통해):', consultationData);
@@ -430,10 +435,6 @@ export class DiagnosisDataManager {
       }
     }
     
-    // 회생터치 번호 생성 (테스트→상담전환 시, Supabase 기반)
-    const consultationName = await this.getNextConsultationNumberFromSupabase();
-    console.log('생성된 회생터치 번호:', consultationName);
-    
     // 연락처 정보 업데이트
     records[recordIndex].contactInfo.name = consultationName; // 회생터치 번호로 변경
     records[recordIndex].contactInfo.phone = phone;
@@ -452,6 +453,33 @@ export class DiagnosisDataManager {
     console.log('업데이트된 레코드:', records[recordIndex]);
     
     this.saveAllRecords(records);
+    console.log('로컬 스토리지 업데이트 완료');
+    
+    // Supabase에도 업데이트
+    try {
+      console.log('🔄 Supabase 업데이트 시작...');
+      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
+      
+      const updateData = {
+        customer_name: consultationName,
+        phone: phone,
+        residence: residence || records[recordIndex].contactInfo.residence,
+        acquisition_source: acquisitionSource,
+        is_duplicate: duplicateInfo.isDuplicate,
+        duplicate_count: duplicateInfo.duplicateCount
+      };
+      
+      const result = await SupabaseDiagnosisService.updateRecord(recordId, updateData);
+      
+      if (result.success) {
+        console.log('✅ Supabase 업데이트 성공!');
+      } else {
+        console.error('❌ Supabase 업데이트 실패:', result.error);
+      }
+    } catch (error) {
+      console.error('❌ Supabase 업데이트 중 오류:', error);
+    }
+    
     console.log('DB 업데이트 완료');
     return { success: true };
   }
