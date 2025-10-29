@@ -1,22 +1,65 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 
 interface AdminAuthProps {
   children: React.ReactNode;
 }
 
+// 3시간 (밀리초)
+const INACTIVITY_TIMEOUT = 3 * 60 * 60 * 1000;
+
 export default function AdminAuth({ children }: AdminAuthProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // 서버에 인증 상태 확인
     checkAuth();
   }, []);
+
+  // 비활동 타이머 설정
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const resetTimer = () => {
+      // 기존 타이머 제거
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+
+      // 새 타이머 설정
+      inactivityTimerRef.current = setTimeout(() => {
+        handleLogout();
+        alert('3시간 동안 활동이 없어 자동 로그아웃되었습니다.');
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    // 사용자 활동 감지 이벤트들
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+
+    // 초기 타이머 설정
+    resetTimer();
+
+    // 이벤트 리스너 등록
+    events.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // 클린업
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+      events.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [isAuthenticated]);
 
   const checkAuth = async () => {
     try {
