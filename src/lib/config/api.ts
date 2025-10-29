@@ -5,9 +5,9 @@
 export const API_CONFIG = {
   // 홈페이지 API 설정
   HOMEPAGE_API: {
-    BASE_URL: 'https://www.legalfriends.co.kr',
+    BASE_URL: 'http://dev.legalflow.co.kr',
     ENDPOINT: '/api/bankruptcy/case/createForLawn',
-    TOKEN: process.env.NEXT_PUBLIC_HOMEPAGE_API_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHgiOjIxNzgsImlkIjoibGF3YW5kZmlybV9zMjAwIiwidmVyIjo2MjcwNzQsImF1ZCI6ImxmdyIsImV4cCI6NDg5Mjc3NTgyOSwiaXNzIjoibGVnYWxmbG93In0.Y7MOGguajJaLdxFLgfPs_I8iOmhzysjYIX1xIQJTr9o', // 실제 서버 토큰 (2025-10-28 업데이트)
+    TOKEN: process.env.NEXT_PUBLIC_HOMEPAGE_API_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHgiOjIxNzgsImlkIjoibGF3YW5kZmlybV9zMjAwIiwidmVyIjo2MjcwNzQsImF1ZCI6ImxmdyIsImV4cCI6NDg5Mjc3NTgyOSwiaXNzIjoibGVnYWxmbG93In0.Y7MOGguajJaLdxFLgfPs_I8iOmhzysjYIX1xIQJTr9o', // 개발 서버 토큰
   },
   
   // 슬랙 API 설정 (향후 사용)
