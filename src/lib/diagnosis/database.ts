@@ -526,21 +526,15 @@ export class DiagnosisDataManager {
       return {
       id: record.id,
       createdAt: (() => {
-        // ISO 문자열을 한국 시간(KST)으로 변환
+        // Supabase의 created_at을 그대로 포맷팅 (이미 UTC 시간)
         const date = new Date(record.createdAt);
-        // toLocaleString을 사용하여 한국 시간대로 변환
-        const kstString = date.toLocaleString('ko-KR', { 
-          timeZone: 'Asia/Seoul',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false
-        });
-        // "2025. 10. 29. 14:30:45" -> "2025.10.29 14:30:45"
-        return kstString.replace(/\. /g, '.').replace(/\.\s/g, ' ').trim();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
       })(),
         name: contactInfo.name || '-',
         phone: contactInfo.phone || '-',
