@@ -128,6 +128,10 @@ export class DiagnosisDataManager {
     const duplicateInfo = this.checkDuplicateContact(data.contact);
     console.log('연락처 중복 체크 결과:', duplicateInfo);
     
+    // 회생터치 번호 생성 (Supabase 기반 - await 필요)
+    const consultationName = await this.getNextConsultationNumberFromSupabase();
+    console.log('생성된 회생터치 번호:', consultationName);
+    
     // 홈페이지 API로 데이터 전송 (서버 API 라우트를 통해)
     try {
       const consultationData = {
@@ -136,7 +140,8 @@ export class DiagnosisDataManager {
         residence: data.residence,
         acquisitionSource: acquisitionSource,
         isDuplicate: duplicateInfo.isDuplicate,
-        duplicateCount: duplicateInfo.duplicateCount
+        duplicateCount: duplicateInfo.duplicateCount,
+        consultationName: consultationName // 생성된 회생터치 번호 전달
       };
       
       console.log('홈페이지 API 호출 시작 (서버 라우트 통해):', consultationData);
@@ -195,7 +200,7 @@ export class DiagnosisDataManager {
       
       // 연락처 정보
       contactInfo: {
-        name: this.getNextConsultationNumber(), // 회생터치 번호 생성
+        name: consultationName, // 미리 생성된 회생터치 번호 사용
         phone: data.contact,
         consultationType: data.consultationType,
         residence: data.residence,
@@ -425,8 +430,8 @@ export class DiagnosisDataManager {
       }
     }
     
-    // 회생터치 번호 생성 (테스트→상담전환 시)
-    const consultationName = this.getNextConsultationNumber();
+    // 회생터치 번호 생성 (테스트→상담전환 시, Supabase 기반)
+    const consultationName = await this.getNextConsultationNumberFromSupabase();
     console.log('생성된 회생터치 번호:', consultationName);
     
     // 연락처 정보 업데이트
@@ -521,16 +526,21 @@ export class DiagnosisDataManager {
       return {
       id: record.id,
       createdAt: (() => {
-        // UTC 시간을 한국 시간(KST, UTC+9)으로 변환
+        // ISO 문자열을 한국 시간(KST)으로 변환
         const date = new Date(record.createdAt);
-        const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000)); // UTC + 9시간
-        const year = kstDate.getUTCFullYear();
-        const month = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(kstDate.getUTCDate()).padStart(2, '0');
-        const hours = String(kstDate.getUTCHours()).padStart(2, '0');
-        const minutes = String(kstDate.getUTCMinutes()).padStart(2, '0');
-        const seconds = String(kstDate.getUTCSeconds()).padStart(2, '0');
-        return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
+        // toLocaleString을 사용하여 한국 시간대로 변환
+        const kstString = date.toLocaleString('ko-KR', { 
+          timeZone: 'Asia/Seoul',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+        // "2025. 10. 29. 14:30:45" -> "2025.10.29 14:30:45"
+        return kstString.replace(/\. /g, '.').replace(/\.\s/g, ' ').trim();
       })(),
         name: contactInfo.name || '-',
         phone: contactInfo.phone || '-',
@@ -713,24 +723,35 @@ export class DiagnosisDataManager {
   }
   
   /**
-   * 회생터치 번호 생성 (최대값 + 1 방식)
+   * 회생터치 번호 생성 (Supabase 기반 - 최대값 + 1 방식)
    */
-  private static getNextConsultationNumber(): string {
+  private static async getNextConsultationNumberFromSupabase(): Promise<string> {
     try {
-      const records = this.getAllRecords();
-      const existingNumbers = records
-        .map(record => record.contactInfo?.name)
-        .filter(name => name && name.startsWith('회생터치'))
-        .map(name => parseInt(name.replace('회생터치', ''), 10))
-        .filter(num => num > 0);
-
+      // Supabase에서 기존 레코드 가져오기
+      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
+      const allRecords = await SupabaseDiagnosisService.getAllRecords();
+      
+      // "회생터치" 로 시작하는 모든 번호 추출
+      const existingNumbers = allRecords
+        .filter(record => record.customer_name && record.customer_name.startsWith('회생터치'))
+        .map(record => {
+          const name = record.customer_name!;
+          const numberPart = name.replace('회생터치', '');
+          return parseInt(numberPart, 10);
+        })
+        .filter(num => !isNaN(num) && num > 0);
+      
+      // 최대값 찾기
       const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
-      return `회생터치${maxNumber + 1}`;
+      const nextNumber = maxNumber + 1;
+      
+      console.log('🔢 회생터치 번호 생성 (Supabase):', `회생터치${nextNumber}`, '(기존 최대값:', maxNumber, ')');
+      return `회생터치${nextNumber}`;
     } catch (error) {
-      console.error('회생터치 번호 생성 실패:', error);
-      // 실패시 타임스탬프 기반 백업
-      const fallback = Date.now() % 10000;
-      return `회생터치${fallback}`;
+      console.error('❌ 회생터치 번호 생성 실패:', error);
+      // 실패시 1번부터 시작
+      console.log('⚠️ 백업 번호 사용: 회생터치1');
+      return '회생터치1';
     }
   }
   

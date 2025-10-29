@@ -26,6 +26,7 @@ export interface ConsultationData {
   acquisitionSource?: string;
   isDuplicate?: boolean;
   duplicateCount?: number;
+  consultationName?: string; // 미리 생성된 회생터치 번호
 }
 
 export interface CaseListRequest {
@@ -512,8 +513,9 @@ export class HomepageApiService {
     // 거주지역 변환
     const livingPlace = regionMap[consultationData.residence] || consultationData.residence;
     
-    // 회생터치 번호 생성 (async)
-    const consultationName = await this.getNextConsultationNumber();
+    // 회생터치 번호 사용 (이미 생성되어 전달된 경우) 또는 새로 생성
+    const consultationName = consultationData.consultationName || await this.getNextConsultationNumber();
+    console.log('🔢 홈페이지 API 전송 회생터치 번호:', consultationName);
     
     // 메모 생성 (신청시간, 고객이름, 거주지역, 상담유형)
     const consultationTypeText = consultationData.consultationType === 'phone' ? '전화상담' : '방문상담';
