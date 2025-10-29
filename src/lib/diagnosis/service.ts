@@ -117,11 +117,15 @@ export class DiagnosisService {
           const savedRecord = await DiagnosisDataManager.saveRecord(updatedDiagnosisData, conversionStatus);
           console.log('진단 데이터 저장 완료:', contactInfo.phone, '상태:', conversionStatus);
           
-          // Supabase ID를 completeDiagnosisData에 추가
+          // Supabase ID를 updatedDiagnosisData와 completeDiagnosisData 모두에 추가
           if (savedRecord.supabaseId) {
+            (updatedDiagnosisData as any).supabaseId = savedRecord.supabaseId;
             (completeDiagnosisData as any).supabaseId = savedRecord.supabaseId;
-            console.log('✅ Supabase ID를 completeDiagnosisData에 추가:', savedRecord.supabaseId);
+            console.log('✅ Supabase ID 추가:', savedRecord.supabaseId);
           }
+          
+          // updatedDiagnosisData를 반환하도록 변경
+          return updatedDiagnosisData;
         } catch (saveError) {
           console.error('진단 결과 저장 중 오류 (계산은 완료됨):', saveError);
         }
