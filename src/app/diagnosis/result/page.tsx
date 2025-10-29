@@ -149,41 +149,43 @@ export default function DiagnosisResult() {
         acquisitionSource: acquisitionSource
       });
 
-      // 기존 진단 데이터 업데이트 (테스트 DB를 전환)
-      const allRecords = DiagnosisDataManager.getAllRecords();
-      if (allRecords.length > 0) {
-        // 가장 최근 기록 찾기 (생성일 기준으로 정렬해서 첫 번째)
-        const sortedRecords = allRecords.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        const latestRecord = sortedRecords[0];
+      // 세션 스토리지에서 Supabase ID 가져오기
+      const supabaseId = sessionStorage.getItem('current_diagnosis_id');
+      
+      if (!supabaseId) {
+        console.error('❌ Supabase ID를 찾을 수 없습니다.');
+        alert('진단 기록을 찾을 수 없습니다. 진단 테스트를 다시 진행해주세요.');
+        setIsSubmittingContact(false);
+        return;
+      }
+      
+      console.log('✅ 세션에서 가져온 Supabase ID:', supabaseId);
+      
+      // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용
+      const result = await DiagnosisDataManager.updateContactInfoAndConversion(
+        supabaseId, // Supabase ID 사용
+        '', // name은 서버에서 생성
+        modalContact,
+        acquisitionSource, // 유입경로를 acquisitionSource로 설정
+        modalConsultationType as 'phone' | 'visit',
+        modalResidence
+      );
         
-        // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용
-        const result = await DiagnosisDataManager.updateContactInfoAndConversion(
-          latestRecord.id,
-          latestRecord.contactInfo?.name || '',
-          modalContact,
-          acquisitionSource, // 유입경로를 acquisitionSource로 설정
-          modalConsultationType as 'phone' | 'visit',
-          modalResidence
-        );
+      if (result.success) {
+        console.log('테스트 DB가 성공적으로 전환되었습니다.');
+        alert(result.message || '상담 신청이 완료되었습니다!');
         
-        if (result.success) {
-          console.log('테스트 DB가 성공적으로 전환되었습니다.');
-          alert(result.message || '상담 신청이 완료되었습니다!');
-          
-          // 폼 초기화
-          setModalConsultationType(''); // 아무것도 선택되지 않음
-          setModalContact('');
-          setModalResidence('');
-          setShowConsultationModal(false);
-        } else {
-          console.error('DB 업데이트 실패:', result.message);
-          alert(result.message || '상담 신청에 실패했습니다. 다시 시도해주세요.');
-        }
+        // 세션 스토리지에서 ID 제거
+        sessionStorage.removeItem('current_diagnosis_id');
+        
+        // 폼 초기화
+        setModalConsultationType(''); // 아무것도 선택되지 않음
+        setModalContact('');
+        setModalResidence('');
+        setShowConsultationModal(false);
       } else {
-        console.log('업데이트할 테스트 기록이 없습니다');
-        alert('진단 기록을 찾을 수 없습니다. 진단 테스트를 먼저 완료해주세요.');
+        console.error('DB 업데이트 실패:', result.message);
+        alert(result.message || '상담 신청에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
       console.error('상담 신청 중 오류:', error);

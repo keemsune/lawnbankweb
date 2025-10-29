@@ -256,7 +256,7 @@ export class DiagnosisDataManager {
     data: CompleteDiagnosisData, 
     acquisitionSource: 'test' | 'converted' | string = 'test',
     duplicateInfo?: { isDuplicate: boolean; duplicateCount: number }
-  ): Promise<DiagnosisRecord> {
+  ): Promise<DiagnosisRecord & { supabaseId?: string }> {
     console.log('DiagnosisDataManager.saveRecord 호출됨');
     console.log('저장할 데이터:', data);
     console.log('유입경로:', acquisitionSource);
@@ -287,6 +287,7 @@ export class DiagnosisDataManager {
     console.log('로컬 스토리지에 저장 완료');
     
     // Supabase에도 저장 (서버 API를 통해)
+    let supabaseId: string | undefined;
     try {
       console.log('🔄 Supabase 저장 시작 (서버 API 통해)...');
       const response = await fetch('/api/supabase/saveRecord', {
@@ -302,8 +303,9 @@ export class DiagnosisDataManager {
       }
       
       const result = await response.json();
-      if (result.success) {
-        console.log('✅ Supabase 저장 성공!');
+      if (result.success && result.data) {
+        supabaseId = result.data.id;
+        console.log('✅ Supabase 저장 성공! ID:', supabaseId);
       } else {
         console.error('❌ Supabase 저장 실패:', result.error);
       }
@@ -312,7 +314,7 @@ export class DiagnosisDataManager {
       // Supabase 저장 실패해도 로컬 저장은 성공으로 처리
     }
     
-    return record;
+    return { ...record, supabaseId };
   }
   
   /**
@@ -456,13 +458,15 @@ export class DiagnosisDataManager {
     console.log('로컬 스토리지 업데이트 완료');
     
     // Supabase에도 업데이트 (서버 API 통해)
-    // 로컬 ID는 UUID가 아니므로, 전화번호로 Supabase 레코드를 찾아서 업데이트
+    // recordId가 Supabase UUID인 경우 직접 업데이트
     try {
       console.log('🔄 Supabase 업데이트 시작 (서버 API 통해)...');
+      console.log('📝 업데이트할 ID:', recordId);
       
       const updateData = {
-        phone: phone, // 전화번호로 레코드 찾기
+        id: recordId, // Supabase UUID
         customer_name: consultationName,
+        phone: phone,
         residence: residence || records[recordIndex].contactInfo.residence,
         acquisition_source: acquisitionSource,
         is_duplicate: duplicateInfo.isDuplicate,

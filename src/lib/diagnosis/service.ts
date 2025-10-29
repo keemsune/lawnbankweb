@@ -114,8 +114,14 @@ export class DiagnosisService {
           const conversionStatus = contactInfo.phone === 'test-user' ? 'test' : 'converted';
           console.log('결정된 전환 상태:', conversionStatus);
           
-          await DiagnosisDataManager.saveRecord(updatedDiagnosisData, conversionStatus);
+          const savedRecord = await DiagnosisDataManager.saveRecord(updatedDiagnosisData, conversionStatus);
           console.log('진단 데이터 저장 완료:', contactInfo.phone, '상태:', conversionStatus);
+          
+          // Supabase ID를 completeDiagnosisData에 추가
+          if (savedRecord.supabaseId) {
+            (completeDiagnosisData as any).supabaseId = savedRecord.supabaseId;
+            console.log('✅ Supabase ID를 completeDiagnosisData에 추가:', savedRecord.supabaseId);
+          }
         } catch (saveError) {
           console.error('진단 결과 저장 중 오류 (계산은 완료됨):', saveError);
         }
@@ -153,13 +159,16 @@ export class DiagnosisService {
   /**
    * 진단 결과를 로컬 스토리지에 저장
    */
-  static saveDiagnosisResult(data: CompleteDiagnosisData): void {
+  static saveDiagnosisResult(data: CompleteDiagnosisData): { supabaseId?: string } | null {
     try {
       if (typeof window !== 'undefined') {
         localStorage.setItem('diagnosisResult', JSON.stringify(data));
+        return { supabaseId: (data as any).supabaseId };
       }
+      return null;
     } catch (error) {
       console.error('진단 결과 저장 중 오류:', error);
+      return null;
     }
   }
   

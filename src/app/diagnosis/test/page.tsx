@@ -307,7 +307,13 @@ export default function DiagnosisTest() {
           console.log('진단 결과 계산 완료:', diagnosisResult);
           
           // 로컬 스토리지에 결과 저장 (기존 방식 유지)
-          DiagnosisService.saveDiagnosisResult(diagnosisResult);
+          const savedResult = DiagnosisService.saveDiagnosisResult(diagnosisResult);
+          
+          // Supabase ID를 세션 스토리지에 저장 (전환 시 사용)
+          if (savedResult && savedResult.supabaseId) {
+            sessionStorage.setItem('current_diagnosis_id', savedResult.supabaseId);
+            console.log('✅ Supabase ID 저장:', savedResult.supabaseId);
+          }
           
           // 저장 후 즉시 확인
           const savedRecords = JSON.parse(localStorage.getItem('diagnosis_records') || '[]');
