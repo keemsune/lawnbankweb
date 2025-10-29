@@ -456,20 +456,20 @@ export class DiagnosisDataManager {
     console.log('로컬 스토리지 업데이트 완료');
     
     // Supabase에도 업데이트 (서버 API 통해)
+    // 로컬 ID는 UUID가 아니므로, 전화번호로 Supabase 레코드를 찾아서 업데이트
     try {
       console.log('🔄 Supabase 업데이트 시작 (서버 API 통해)...');
       
       const updateData = {
-        id: recordId,
+        phone: phone, // 전화번호로 레코드 찾기
         customer_name: consultationName,
-        phone: phone,
         residence: residence || records[recordIndex].contactInfo.residence,
         acquisition_source: acquisitionSource,
         is_duplicate: duplicateInfo.isDuplicate,
         duplicate_count: duplicateInfo.duplicateCount
       };
       
-      const response = await fetch('/api/supabase/updateRecord', {
+      const response = await fetch('/api/supabase/updateRecordByPhone', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
