@@ -455,12 +455,12 @@ export class DiagnosisDataManager {
     this.saveAllRecords(records);
     console.log('로컬 스토리지 업데이트 완료');
     
-    // Supabase에도 업데이트
+    // Supabase에도 업데이트 (서버 API 통해)
     try {
-      console.log('🔄 Supabase 업데이트 시작...');
-      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
+      console.log('🔄 Supabase 업데이트 시작 (서버 API 통해)...');
       
       const updateData = {
+        id: recordId,
         customer_name: consultationName,
         phone: phone,
         residence: residence || records[recordIndex].contactInfo.residence,
@@ -469,7 +469,19 @@ export class DiagnosisDataManager {
         duplicate_count: duplicateInfo.duplicateCount
       };
       
-      const result = await SupabaseDiagnosisService.updateRecord(recordId, updateData);
+      const response = await fetch('/api/supabase/updateRecord', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`서버 API 호출 실패: ${response.status}`);
+      }
+      
+      const result = await response.json();
       
       if (result.success) {
         console.log('✅ Supabase 업데이트 성공!');
