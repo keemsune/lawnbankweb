@@ -80,7 +80,7 @@ export default function ApiTestPage() {
       setTestResult(`✅ 리트라이 시스템 정상 작동!\n\n🔍 테스트 결과:\n- 총 3회 시도 후 실패 (정상)\n- 각 시도별 로그 콘솔에서 확인\n- 슬랙 오류 알림 전송됨 (설정된 경우)\n\n🚨 실패 내용:\n${error instanceof Error ? error.message : String(error)}\n\n💡 이제 토큰을 원래대로 복구하고 정상 테스트를 해보세요.`);
     } finally {
       // 토큰 원복 (실제 토큰으로)
-      updateApiConfig.setHomepageToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHgiOjIxNzgsImlkIjoibGF3YW5kZmlybV9zMjAwIiwidmVyIjo2MjcwNzQsImF1ZCI6ImxmdyIsImV4cCI6NDg5Mjc3NTgyOSwiaXNzIjoibGVnYWxmbG93In0.Y7MOGguajJaLdxFLgfPs_I8iOmhzysjYIX1xIQJTr9o');
+      updateApiConfig.setHomepageToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHgiOjEzMywiaWQiOiJsYXdhbmQ2IiwidmVyIjo5NDQwNTQzLCJkZXZfdHlwZSI6MSwiYXVkIjoibGZ3IiwiZXhwIjoxNzYxODI2MjcxLCJpc3MiOiJsZWdhbGZsb3cifQ.b7cBnisaI3BUoA4lEamEVhZDsNzJGC8chBClNykgyos');
       setIsLoading(false);
     }
   };
