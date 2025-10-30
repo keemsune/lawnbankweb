@@ -23,6 +23,19 @@ interface ErrorAnalysis {
 
 export class SlackNotificationService {
   /**
+   * 날짜를 YYYY-MM-DD HH:mm:ss 형식으로 변환
+   */
+  private static formatDateTime(date: Date = new Date()): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
+  /**
    * 오류 분석 및 분류
    */
   private static analyzeError(error: string): ErrorAnalysis {
@@ -219,10 +232,8 @@ export class SlackNotificationService {
     const minutes = String(kstDate.getUTCMinutes()).padStart(2, '0');
     const seconds = String(kstDate.getUTCSeconds()).padStart(2, '0');
     
-    const period = parseInt(hours) < 12 ? '오전' : '오후';
-    const displayHours = parseInt(hours) % 12 || 12;
-    
-    return `${year}. ${parseInt(month)}. ${parseInt(day)}. ${period} ${displayHours}:${minutes}:${seconds}`;
+    // 형식: 2025-10-30 13:22:45
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 
   /**
@@ -246,7 +257,7 @@ export class SlackNotificationService {
         유입경로: data.acquisitionSource,
         오류내용: data.error,
         현재시도: `${data.currentAttempt}/${data.maxAttempts}`,
-        재시도시간: new Date().toLocaleString('ko-KR')
+        재시도시간: this.formatDateTime()
       }
     };
 
