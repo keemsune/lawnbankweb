@@ -149,7 +149,7 @@ export default function DiagnosisResult() {
         acquisitionSource: acquisitionSource
       });
 
-      // 세션 스토리지에서 Supabase ID 가져오기 (없으면 로컬 스토리지에서)
+      // Supabase ID 가져오기: 세션 스토리지 -> 로컬 스토리지 -> 현재 diagnosisData
       let supabaseId = sessionStorage.getItem('current_diagnosis_id');
       
       // 세션에 없으면 로컬 스토리지의 diagnosisResult에서 가져오기
@@ -158,15 +158,26 @@ export default function DiagnosisResult() {
         const savedResult = localStorage.getItem('diagnosisResult');
         if (savedResult) {
           const parsedResult = JSON.parse(savedResult);
-          supabaseId = parsedResult.supabaseId;
+          supabaseId = parsedResult.supabaseId || (parsedResult as any).supabaseId;
           console.log('✅ 로컬 스토리지에서 가져온 Supabase ID:', supabaseId);
         }
       } else {
         console.log('✅ 세션에서 가져온 Supabase ID:', supabaseId);
       }
       
+      // 여전히 없으면 현재 diagnosisData에서 가져오기
+      if (!supabaseId && diagnosisData) {
+        supabaseId = (diagnosisData as any).supabaseId;
+        console.log('⚠️ diagnosisData에서 가져온 Supabase ID:', supabaseId);
+      }
+      
       if (!supabaseId) {
         console.error('❌ Supabase ID를 찾을 수 없습니다.');
+        console.log('📋 현재 상태:', {
+          sessionStorage: sessionStorage.getItem('current_diagnosis_id'),
+          localStorage: localStorage.getItem('diagnosisResult'),
+          diagnosisData: diagnosisData
+        });
         alert('진단 기록을 찾을 수 없습니다. 진단 테스트를 다시 진행해주세요.');
         setIsSubmittingContact(false);
         return;
