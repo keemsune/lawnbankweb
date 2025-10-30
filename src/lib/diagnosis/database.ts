@@ -375,11 +375,38 @@ export class DiagnosisDataManager {
     console.log('recordId:', recordId, 'name:', name, 'phone:', phone, 'acquisitionSource:', acquisitionSource);
     
     const records = this.getAllRecords();
-    const recordIndex = records.findIndex(record => record.id === recordId);
+    
+    // recordId로 레코드 찾기 (로컬 ID 또는 Supabase ID로 검색)
+    let recordIndex = records.findIndex(record => record.id === recordId);
+    
+    // 로컬 ID로 못 찾으면 Supabase ID로 검색
+    if (recordIndex === -1) {
+      console.log('⚠️ 로컬 ID로 레코드를 찾지 못함, Supabase ID로 검색 시도...');
+      recordIndex = records.findIndex(record => (record as any).supabaseId === recordId);
+      
+      if (recordIndex !== -1) {
+        console.log('✅ Supabase ID로 레코드 찾음:', records[recordIndex].id);
+      }
+    }
+    
+    // 여전히 못 찾으면 가장 최근 test 레코드 사용 (fallback)
+    if (recordIndex === -1) {
+      console.log('⚠️ ID로 레코드를 찾지 못함, 가장 최근 test 레코드 검색...');
+      const testRecords = records
+        .filter(r => r.acquisitionSource === 'test')
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      
+      if (testRecords.length > 0) {
+        const latestTestRecord = testRecords[0];
+        recordIndex = records.findIndex(r => r.id === latestTestRecord.id);
+        console.log('✅ 가장 최근 test 레코드 사용:', latestTestRecord.id);
+      }
+    }
     
     if (recordIndex === -1) {
-      console.error('레코드를 찾을 수 없습니다:', recordId);
-      return { success: false, message: '진단 기록을 찾을 수 없습니다.' };
+      console.error('❌ 레코드를 찾을 수 없습니다. 제공된 ID:', recordId);
+      console.log('📋 현재 저장된 레코드:', records.map(r => ({ id: r.id, supabaseId: (r as any).supabaseId, acquisitionSource: r.acquisitionSource })));
+      return { success: false, message: '진단 기록을 찾을 수 없습니다. 진단 테스트를 다시 진행해주세요.' };
     }
     
     const currentRecord = records[recordIndex];
