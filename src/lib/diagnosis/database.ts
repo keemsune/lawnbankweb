@@ -107,30 +107,42 @@ export class DiagnosisDataManager {
   private static readonly STORAGE_KEY = 'diagnosis_records';
   
   /**
-   * 연락처 중복 체크 (홈페이지 API 기반)
+   * 연락처 중복 체크 (홈페이지 API 기반 - 서버 라우트 통해)
    */
   private static async checkDuplicateContact(phone: string): Promise<{ isDuplicate: boolean; duplicateCount: number }> {
     try {
-      // 홈페이지 API에서 케이스 리스트 조회
-      const { HomepageApiService } = await import('@/lib/services/homepageApi');
-      const caseListResponse = await HomepageApiService.getCaseList(phone);
+      console.log('🔍 중복 체크 시작 (서버 API 통해):', phone);
       
-      if (caseListResponse.code === 0 && caseListResponse.data) {
-        const count = caseListResponse.data.total_cnt || 0;
-        console.log('🔍 홈페이지 API 중복 체크 결과:', { phone, count, isDuplicate: count > 0 });
+      // 서버 API 라우트를 통해 홈페이지 API 호출
+      const response = await fetch('/api/homepage/checkDuplicate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`서버 API 호출 실패: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('✅ 중복 체크 결과:', result);
         return {
-          isDuplicate: count > 0,
-          duplicateCount: count + 1 // 현재 신청 포함
+          isDuplicate: result.isDuplicate,
+          duplicateCount: result.duplicateCount
         };
       } else {
-        console.log('⚠️ 홈페이지 API 응답 오류, 중복 없음으로 처리');
+        console.error('❌ 중복 체크 실패:', result.error);
         return {
           isDuplicate: false,
           duplicateCount: 1
         };
       }
     } catch (error) {
-      console.error('❌ 홈페이지 API 중복 체크 실패:', error);
+      console.error('❌ 중복 체크 중 오류:', error);
       // API 실패 시 중복 없음으로 처리
       return {
         isDuplicate: false,
