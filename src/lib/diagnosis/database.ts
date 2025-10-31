@@ -55,6 +55,10 @@ export interface DiagnosisTableRow {
   
   status: string;
   acquisitionSource: string;
+  
+  // 중복 정보
+  isDuplicate?: boolean;
+  duplicateCount?: number;
 }
 
 /**
@@ -640,7 +644,11 @@ export class DiagnosisDataManager {
         comparison: this.isDirectConsultation(record) ? '-' : (result.reductionRate.comparison === 'low' && result.reductionRate.percentage === 0 ? '-' : this.getComparisonText(result.reductionRate.comparison)),
       
       status: this.getStatusText(record.status),
-        acquisitionSource: this.getAcquisitionSourceText(record.acquisitionSource)
+        acquisitionSource: this.getAcquisitionSourceText(record.acquisitionSource),
+        
+        // 중복 정보
+        isDuplicate: record.isDuplicate || false,
+        duplicateCount: record.duplicateCount || 0
       };
     });
   }

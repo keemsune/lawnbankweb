@@ -391,21 +391,13 @@ export default function DiagnosisDashboard({ className }: DiagnosisDashboardProp
                         {record.residence && (
                           <div className="text-xs text-green-600">{record.residence}</div>
                         )}
-                        {(() => {
-                          // 현재 레코드의 중복 정보 확인
-                          const allRecords = DiagnosisDataManager.getAllRecords();
-                          const currentFullRecord = allRecords.find(r => r.id === record.id);
-                          if (currentFullRecord?.isDuplicate) {
-                            return (
-                              <div className="mt-1">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                  중복
-                                </span>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
+                        {record.isDuplicate && (
+                          <div className="mt-1">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              중복 ({record.duplicateCount}회)
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
