@@ -137,7 +137,7 @@ export class DiagnosisDataManager {
     console.log('저장할 상담 신청 데이터:', data);
     
     // 연락처 중복 체크
-    const duplicateInfo = this.checkDuplicateContact(data.contact);
+    const duplicateInfo = await this.checkDuplicateContact(data.contact);
     console.log('연락처 중복 체크 결과:', duplicateInfo);
     
     // 회생터치 번호 생성 (Supabase 기반 - await 필요)
@@ -431,7 +431,7 @@ export class DiagnosisDataManager {
     }
     
     // 연락처 중복 체크
-    const duplicateInfo = this.checkDuplicateContact(phone);
+    const duplicateInfo = await this.checkDuplicateContact(phone);
     console.log('연락처 중복 체크 결과:', duplicateInfo);
     
     // 회생터치 번호 생성 (테스트→상담전환 시, Supabase 기반)
