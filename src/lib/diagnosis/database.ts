@@ -103,18 +103,30 @@ export class DiagnosisDataManager {
   private static readonly STORAGE_KEY = 'diagnosis_records';
   
   /**
-   * 연락처 중복 체크
+   * 연락처 중복 체크 (Supabase 기반)
    */
-  private static checkDuplicateContact(phone: string): { isDuplicate: boolean; duplicateCount: number } {
-    const records = this.getAllRecords();
-    const duplicates = records.filter(record => 
-      record.contactInfo?.phone === phone
-    );
-    
-    return {
-      isDuplicate: duplicates.length > 0,
-      duplicateCount: duplicates.length + 1 // 현재 신청 포함
-    };
+  private static async checkDuplicateContact(phone: string): Promise<{ isDuplicate: boolean; duplicateCount: number }> {
+    try {
+      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
+      const result = await SupabaseDiagnosisService.checkDuplicateByPhone(phone);
+      console.log('🔍 Supabase 중복 체크 결과:', result);
+      return {
+        isDuplicate: result.isDuplicate,
+        duplicateCount: result.count + 1 // 현재 신청 포함
+      };
+    } catch (error) {
+      console.error('❌ Supabase 중복 체크 실패, 로컬 스토리지로 폴백:', error);
+      // Supabase 실패 시 로컬 스토리지로 폴백
+      const records = this.getAllRecords();
+      const duplicates = records.filter(record => 
+        record.contactInfo?.phone === phone
+      );
+      
+      return {
+        isDuplicate: duplicates.length > 0,
+        duplicateCount: duplicates.length + 1
+      };
+    }
   }
   
   /**
