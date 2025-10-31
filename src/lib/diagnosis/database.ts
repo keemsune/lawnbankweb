@@ -107,28 +107,34 @@ export class DiagnosisDataManager {
   private static readonly STORAGE_KEY = 'diagnosis_records';
   
   /**
-   * 연락처 중복 체크 (Supabase 기반)
+   * 연락처 중복 체크 (홈페이지 API 기반)
    */
   private static async checkDuplicateContact(phone: string): Promise<{ isDuplicate: boolean; duplicateCount: number }> {
     try {
-      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
-      const result = await SupabaseDiagnosisService.checkDuplicateByPhone(phone);
-      console.log('🔍 Supabase 중복 체크 결과:', result);
-      return {
-        isDuplicate: result.isDuplicate,
-        duplicateCount: result.count + 1 // 현재 신청 포함
-      };
-    } catch (error) {
-      console.error('❌ Supabase 중복 체크 실패, 로컬 스토리지로 폴백:', error);
-      // Supabase 실패 시 로컬 스토리지로 폴백
-      const records = this.getAllRecords();
-      const duplicates = records.filter(record => 
-        record.contactInfo?.phone === phone
-      );
+      // 홈페이지 API에서 케이스 리스트 조회
+      const { HomepageApiService } = await import('@/lib/services/homepageApi');
+      const caseListResponse = await HomepageApiService.getCaseList(phone);
       
+      if (caseListResponse.code === 0 && caseListResponse.data) {
+        const count = caseListResponse.data.total_cnt || 0;
+        console.log('🔍 홈페이지 API 중복 체크 결과:', { phone, count, isDuplicate: count > 0 });
+        return {
+          isDuplicate: count > 0,
+          duplicateCount: count + 1 // 현재 신청 포함
+        };
+      } else {
+        console.log('⚠️ 홈페이지 API 응답 오류, 중복 없음으로 처리');
+        return {
+          isDuplicate: false,
+          duplicateCount: 1
+        };
+      }
+    } catch (error) {
+      console.error('❌ 홈페이지 API 중복 체크 실패:', error);
+      // API 실패 시 중복 없음으로 처리
       return {
-        isDuplicate: duplicates.length > 0,
-        duplicateCount: duplicates.length + 1
+        isDuplicate: false,
+        duplicateCount: 1
       };
     }
   }
