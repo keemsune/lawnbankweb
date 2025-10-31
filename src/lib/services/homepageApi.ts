@@ -141,7 +141,7 @@ export class HomepageApiService {
         if (consultationData.isDuplicate) {
           try {
             console.log('🔍 중복 등록 - 담당자 조회 시작');
-            managerName = await this.getManagerNameByPhone(apiRequest.phone);
+            managerName = await this.getDuplicateManagerName(apiRequest.phone);
             console.log('✅ 담당자 조회 결과:', managerName || '(없음)');
           } catch (error) {
             console.error('❌ 담당자 조회 실패:', error);
