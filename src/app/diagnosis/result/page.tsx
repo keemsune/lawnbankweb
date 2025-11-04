@@ -82,12 +82,34 @@ export default function DiagnosisResult() {
 
       // 기존 진단 데이터 업데이트
       const allRecords = DiagnosisDataManager.getAllRecords();
+      let latestRecord = null;
+      
       if (allRecords.length > 0) {
         // 가장 최근 기록 찾기 (생성일 기준으로 정렬해서 첫 번째)
         const sortedRecords = allRecords.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        const latestRecord = sortedRecords[0];
+        latestRecord = sortedRecords[0];
+      }
+      
+      // 로컬스토리지에서 못 찾으면 현재 diagnosisData 사용
+      if (!latestRecord && diagnosisData) {
+        console.log('📦 섹션7: 로컬스토리지에서 못 찾음, diagnosisData 사용');
+        const supabaseId = sessionStorage.getItem('current_diagnosis_id') || 
+                          (diagnosisData as any).supabaseId || 
+                          'temp-' + Date.now();
+        latestRecord = {
+          ...diagnosisData,
+          id: supabaseId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: 'completed' as const,
+          acquisitionSource: 'test'
+        };
+      }
+      
+      if (latestRecord) {
+        console.log('🔍 섹션7 최종 diagnosisRecord:', '있음');
         
         // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용 (진단 레코드 전달)
         const result = await DiagnosisDataManager.updateContactInfoAndConversion(
@@ -186,9 +208,24 @@ export default function DiagnosisResult() {
       
       // 진단 레코드 찾기
       const allRecords = DiagnosisDataManager.getAllRecords();
-      const diagnosisRecord = allRecords.find(r => 
+      let diagnosisRecord = allRecords.find(r => 
         r.id === supabaseId || (r as any).supabaseId === supabaseId
       );
+      
+      // 로컬스토리지에서 못 찾으면 현재 diagnosisData 사용
+      if (!diagnosisRecord && diagnosisData) {
+        console.log('📦 로컬스토리지에서 못 찾음, diagnosisData 사용');
+        diagnosisRecord = {
+          ...diagnosisData,
+          id: supabaseId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: 'completed' as const,
+          acquisitionSource: 'test'
+        };
+      }
+      
+      console.log('🔍 최종 diagnosisRecord:', diagnosisRecord ? '있음' : '없음');
       
       // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용 (진단 레코드 전달)
       const result = await DiagnosisDataManager.updateContactInfoAndConversion(
