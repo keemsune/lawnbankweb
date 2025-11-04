@@ -543,14 +543,16 @@ export class HomepageApiService {
     // 메모 생성 (신청시간, 고객이름, 거주지역, 상담유형, 진단내용)
     const consultationTypeText = consultationData.consultationType === 'phone' ? '전화상담' : '방문상담';
     
-    // 날짜 형식: 2025-10-30 13:22:45
+    // 날짜 형식: 2025-10-30 13:22:45 (한국 시간 KST)
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const kstOffset = 9 * 60; // KST는 UTC+9
+    const kstTime = new Date(now.getTime() + kstOffset * 60 * 1000);
+    const year = kstTime.getUTCFullYear();
+    const month = String(kstTime.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(kstTime.getUTCDate()).padStart(2, '0');
+    const hours = String(kstTime.getUTCHours()).padStart(2, '0');
+    const minutes = String(kstTime.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(kstTime.getUTCSeconds()).padStart(2, '0');
     const currentTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     
     // 기본 메모
