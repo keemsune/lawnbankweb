@@ -144,34 +144,11 @@ export class HomepageApiService {
           throw new Error(`API Error: ${result.code} - ${result.msg}`);
         }
         
-        // 성공 시 서버사이드 슬랙 알림 및 반환
-        console.log(`홈페이지 API 호출 성공 (${attempt}번째 시도)`);
-        
-        // 중복 등록인 경우 담당자 조회
-        let managerName: string | undefined;
-        if (consultationData.isDuplicate) {
-          try {
-            console.log('🔍 중복 등록 - 담당자 조회 시작');
-            managerName = await this.getDuplicateManagerName(apiRequest.phone);
-            console.log('✅ 담당자 조회 결과:', managerName || '(없음)');
-          } catch (error) {
-            console.error('❌ 담당자 조회 실패:', error);
-          }
-        }
-        
-        // 서버사이드 성공 알림 전송 (CORS 우회)
-        this.sendServerSideSlackNotification({
-          type: 'success',
-          customerName: apiRequest.name,
-          consultationType: consultationData.consultationType === 'phone' ? '전화상담' : '방문상담',
-          acquisitionSource: consultationData.acquisitionSource || '기타',
-          attempts: attempt,
-          phone: apiRequest.phone,
-          residence: apiRequest.living_place,
-          isDuplicate: consultationData.isDuplicate,
-          duplicateCount: consultationData.duplicateCount,
-          managerName: managerName
-        }).catch(error => console.error('슬랙 성공 알림 전송 실패:', error));
+        // 성공 시 로그만 출력 (슬랙 알림 제거)
+        console.log(`✅ 홈페이지 API 호출 성공 (${attempt}번째 시도)`);
+        console.log('📝 등록된 고객:', apiRequest.name);
+        console.log('📞 연락처:', apiRequest.phone);
+        console.log('📍 거주지:', apiRequest.living_place);
         
         return result;
         
