@@ -403,7 +403,8 @@ export class DiagnosisDataManager {
     phone: string, 
     acquisitionSource: 'test' | 'converted' | string = 'converted',
     consultationType?: 'phone' | 'visit',
-    residence?: string
+    residence?: string,
+    diagnosisRecord?: DiagnosisRecord
   ): Promise<{ success: boolean; message?: string }> {
     console.log('DiagnosisDataManager.updateContactInfoAndConversion 호출됨');
     console.log('recordId:', recordId, 'name:', name, 'phone:', phone, 'acquisitionSource:', acquisitionSource);
@@ -463,6 +464,29 @@ export class DiagnosisDataManager {
     // 홈페이지 API로 데이터 전송 (전환된 경우에만, 서버 API 라우트를 통해)
     if (acquisitionSource === '테스트_전환' || acquisitionSource === 'converted' || acquisitionSource === '결과_서비스혜택' || acquisitionSource === '결과_진행절차') {
       try {
+        // 진단 데이터 준비 (diagnosisRecord가 제공된 경우)
+        let diagnosisData = undefined;
+        if (diagnosisRecord) {
+          const originalAnswers = diagnosisRecord.originalAnswers || {};
+          const result = diagnosisRecord.result;
+          
+          diagnosisData = {
+            maritalStatus: originalAnswers[1] || undefined,
+            children: originalAnswers[2] || undefined,
+            income: originalAnswers[3] ? 
+              (originalAnswers['3_additional'] ? `${originalAnswers[3]} (${originalAnswers['3_additional']})` : originalAnswers[3]) 
+              : undefined,
+            assets: originalAnswers[5] ? (Array.isArray(originalAnswers[5]) ? originalAnswers[5].join(', ') : originalAnswers[5]) : undefined,
+            debt: originalAnswers[6] || undefined,
+            recommendation: result?.eligibility?.recommendation === 'recovery' ? '개인회생' :
+                           result?.eligibility?.recommendation === 'bankruptcy' ? '파산면책' :
+                           result?.eligibility?.recommendation === 'both' ? '회생/파산 모두' : undefined,
+            monthlyPayment36: result?.monthlyPayment?.period36 || undefined,
+            monthlyPayment60: result?.monthlyPayment?.period60 || undefined,
+            reductionRate: result?.reductionRate?.percentage || undefined
+          };
+        }
+        
         const consultationData = {
           consultationType: consultationType || 'phone',
           contact: phone,
@@ -470,7 +494,8 @@ export class DiagnosisDataManager {
           acquisitionSource: acquisitionSource,
           isDuplicate: duplicateInfo.isDuplicate,
           duplicateCount: duplicateInfo.duplicateCount,
-          consultationName: consultationName // 생성된 회생터치 번호 전달
+          consultationName: consultationName, // 생성된 회생터치 번호 전달
+          diagnosisData: diagnosisData // 진단 데이터 추가
         };
         
         console.log('홈페이지 API 호출 시작 (전환, 서버 라우트 통해):', consultationData);

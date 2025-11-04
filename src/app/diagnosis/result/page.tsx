@@ -89,14 +89,15 @@ export default function DiagnosisResult() {
         );
         const latestRecord = sortedRecords[0];
         
-        // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용
+        // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용 (진단 레코드 전달)
         const result = await DiagnosisDataManager.updateContactInfoAndConversion(
           latestRecord.id,
           latestRecord.contactInfo?.name || '',
           contact,
           '테스트_전환',
           consultationType as 'phone' | 'visit',
-          residence
+          residence,
+          latestRecord // 진단 레코드 전달
         );
         
         if (result.success) {
@@ -183,14 +184,21 @@ export default function DiagnosisResult() {
         return;
       }
       
-      // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용
+      // 진단 레코드 찾기
+      const allRecords = DiagnosisDataManager.getAllRecords();
+      const diagnosisRecord = allRecords.find(r => 
+        r.id === supabaseId || (r as any).supabaseId === supabaseId
+      );
+      
+      // DiagnosisDataManager의 updateContactInfoAndConversion 메서드 사용 (진단 레코드 전달)
       const result = await DiagnosisDataManager.updateContactInfoAndConversion(
         supabaseId, // Supabase ID 사용
         '', // name은 서버에서 생성
         modalContact,
         acquisitionSource, // 유입경로를 acquisitionSource로 설정
         modalConsultationType as 'phone' | 'visit',
-        modalResidence
+        modalResidence,
+        diagnosisRecord // 진단 레코드 전달
       );
         
       if (result.success) {

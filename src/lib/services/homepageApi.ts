@@ -27,6 +27,17 @@ export interface ConsultationData {
   isDuplicate?: boolean;
   duplicateCount?: number;
   consultationName?: string; // 미리 생성된 회생터치 번호
+  diagnosisData?: {
+    maritalStatus?: string;
+    children?: string;
+    income?: string;
+    assets?: string;
+    debt?: string;
+    recommendation?: string;
+    monthlyPayment36?: number;
+    monthlyPayment60?: number;
+    reductionRate?: number;
+  };
 }
 
 export interface CaseListRequest {
@@ -529,7 +540,7 @@ export class HomepageApiService {
     const consultationName = consultationData.consultationName || await this.getNextConsultationNumber();
     console.log('🔢 홈페이지 API 전송 회생터치 번호:', consultationName);
     
-    // 메모 생성 (신청시간, 고객이름, 거주지역, 상담유형)
+    // 메모 생성 (신청시간, 고객이름, 거주지역, 상담유형, 진단내용)
     const consultationTypeText = consultationData.consultationType === 'phone' ? '전화상담' : '방문상담';
     
     // 날짜 형식: 2025-10-30 13:22:45
@@ -542,7 +553,20 @@ export class HomepageApiService {
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const currentTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     
-    const memo = `신청시간: ${currentTime}\n고객이름: ${consultationName}\n거주지역: ${livingPlace}\n상담유형: ${consultationTypeText}`;
+    // 기본 메모
+    let memo = `신청시간: ${currentTime}\n고객이름: ${consultationName}\n거주지역: ${livingPlace}\n상담유형: ${consultationTypeText}`;
+    
+    // 진단 데이터가 있는 경우 추가
+    if (consultationData.diagnosisData) {
+      const d = consultationData.diagnosisData;
+      memo += '\n\n[자가진단 결과]';
+      
+      if (d.maritalStatus) memo += `\n혼인여부: ${d.maritalStatus}`;
+      if (d.children) memo += `\n자녀: ${d.children}`;
+      if (d.income) memo += `\n소득: ${d.income}`;
+      if (d.assets) memo += `\n재산: ${d.assets}`;
+      if (d.debt) memo += `\n채무: ${d.debt}`;
+    }
      
     return {
       case_type: 1, // 기본값: 개인회생 (필요시 동적으로 변경 가능)
