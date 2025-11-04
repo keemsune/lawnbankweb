@@ -464,11 +464,16 @@ export class DiagnosisDataManager {
     // 홈페이지 API로 데이터 전송 (전환된 경우에만, 서버 API 라우트를 통해)
     if (acquisitionSource === '테스트_전환' || acquisitionSource === 'converted' || acquisitionSource === '결과_서비스혜택' || acquisitionSource === '결과_진행절차') {
       try {
+        console.log('🔍 진단 레코드 확인:', diagnosisRecord ? '있음' : '없음');
+        
         // 진단 데이터 준비 (diagnosisRecord가 제공된 경우)
         let diagnosisData = undefined;
         if (diagnosisRecord) {
           const originalAnswers = diagnosisRecord.originalAnswers || {};
           const result = diagnosisRecord.result;
+          
+          console.log('📝 원본 답변:', originalAnswers);
+          console.log('📊 진단 결과:', result);
           
           diagnosisData = {
             maritalStatus: originalAnswers[1] || undefined,
@@ -485,6 +490,10 @@ export class DiagnosisDataManager {
             monthlyPayment60: result?.monthlyPayment?.period60 || undefined,
             reductionRate: result?.reductionRate?.percentage || undefined
           };
+          
+          console.log('✅ 생성된 진단 데이터:', diagnosisData);
+        } else {
+          console.log('⚠️ diagnosisRecord가 없습니다!');
         }
         
         const consultationData = {
