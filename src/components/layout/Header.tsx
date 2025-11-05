@@ -21,7 +21,14 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
   const [consultationType, setConsultationType] = useState<'phone' | 'visit' | ''>('')
   const [contact, setContact] = useState('')
   const [residence, setResidence] = useState('')
+  const [variant, setVariant] = useState<string | null>(null)
   const pathname = usePathname()
+
+  // variant 파라미터 읽기
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setVariant(params.get('variant'));
+  }, [pathname])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -107,6 +114,13 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
     }
   }, [isMenuOpen])
 
+  // variant 파라미터를 URL에 추가하는 헬퍼 함수
+  const addVariantToUrl = (url: string) => {
+    if (!variant) return url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}variant=${variant}`;
+  };
+
   const allMenuItems = [
     { href: '/diagnosis', label: '자가진단 테스트' },
     { href: '/cases', label: '진행사례' },
@@ -128,7 +142,7 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
         <Container>
           <div className="flex items-center justify-between h-14 sm:h-16 md:h-[72px] lg:h-[80px]">
             {/* 로고 */}
-            <Link href="/" className="flex items-center">
+            <Link href={addVariantToUrl("/")} className="flex items-center">
               <Image
                 src="/images/logo.svg"
                 alt="회생터치 로고"
@@ -143,7 +157,7 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
               {menuItems.map((item) => (
                 <Link 
                   key={item.href}
-                  href={item.href} 
+                  href={addVariantToUrl(item.href)} 
                   className="text-base font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {item.label}
@@ -206,7 +220,7 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
                 {menuItems.map((item) => (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={addVariantToUrl(item.href)}
                     onClick={closeMenu}
                         className="block text-heading-lg font-bold text-foreground hover:text-primary transition-colors"
                   >
@@ -221,7 +235,7 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
                   {/* 1단: CTA 버튼 - 세로 3개 */}
                   <div className="flex flex-col gap-2">
                     <Link
-                      href="/diagnosis/test"
+                      href={addVariantToUrl("/diagnosis/test")}
                       onClick={closeMenu}
                       className="bg-primary hover:bg-emerald-800 text-primary-foreground flex items-center justify-between py-3.5 px-5 rounded-xl text-label-sm transition-colors"
                     >
@@ -292,7 +306,7 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
                     {menuItems.map((item) => (
                       <Link
                         key={item.href}
-                        href={item.href}
+                        href={addVariantToUrl(item.href)}
                         onClick={closeMenu}
                         className="block text-heading-lg font-bold text-foreground hover:text-primary transition-colors"
                       >
@@ -307,7 +321,7 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
                   {/* 1단: CTA 버튼 - 가로 3개 */}
                   <div className="flex gap-4">
                     <Link
-                      href="/diagnosis/test"
+                      href={addVariantToUrl("/diagnosis/test")}
                       onClick={closeMenu}
                       className="flex-1 bg-primary hover:bg-emerald-800 text-primary-foreground flex items-center justify-between py-3.5 px-5 rounded-xl text-label-sm transition-colors"
                     >
@@ -378,7 +392,7 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
                     {menuItems.map((item) => (
                       <Link
                         key={item.href}
-                        href={item.href}
+                        href={addVariantToUrl(item.href)}
                         onClick={closeMenu}
                         className="block text-heading-lg font-bold text-foreground hover:text-primary transition-colors"
                       >
@@ -393,7 +407,7 @@ export default function Header({ hideCasesMenu = false }: HeaderProps) {
                   {/* 1단: CTA 버튼 - 가로 3개 */}
                   <div className="flex gap-6">
                     <Link
-                      href="/diagnosis/test"
+                      href={addVariantToUrl("/diagnosis/test")}
                       onClick={closeMenu}
                       className="flex-1 bg-primary hover:bg-emerald-800 text-primary-foreground flex items-center justify-between py-3.5 px-5 rounded-xl text-label-sm transition-colors"
                     >
