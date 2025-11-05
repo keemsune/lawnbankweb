@@ -1,10 +1,12 @@
+'use client';
+
 import './globals.css';
-import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import FixedBottomBar from '@/components/layout/FixedBottomBar';
+import { useEffect, useState } from 'react';
 
 const notoSansKR = Noto_Sans_KR({ 
   subsets: ['latin'],
@@ -12,39 +14,20 @@ const notoSansKR = Noto_Sans_KR({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://revivetouch.lawandfirm.com'),
-  title: '회생터치 - 회생파산 전문 법무법인 로앤',
-  description: '5번의 터치로 찾는 나만의 채무 해결책. 개인회생 개인파산 13년 경력 전문 변호사.',
-  openGraph: {
-    title: '회생터치 - 회생파산 전문 법무법인 로앤',
-    description: '5번의 터치로 찾는 나만의 채무 해결책. 개인회생 개인파산 13년 경력 전문 변호사.',
-    url: 'https://revivetouch.lawandfirm.com',
-    siteName: '회생터치',
-    images: [
-      {
-        url: '/images/og-image.webp?v=2',
-        width: 1200,
-        height: 630,
-        alt: '회생터치 - 법무법인 로앤',
-      },
-    ],
-    locale: 'ko_KR',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: '회생터치 - 회생파산 전문 법무법인 로앤',
-    description: '5번의 터치로 찾는 나만의 채무 해결책. 개인회생 개인파산 13년 경력 전문 변호사.',
-    images: ['/images/og-image.webp?v=2'],
-  },
-};
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // variant 상태 관리
+  const [variant, setVariant] = useState<string | null>(null);
+
+  // 컴포넌트 마운트 시 URL에서 variant 읽기
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setVariant(params.get('variant'));
+  }, []);
+
   return (
     <html lang="ko">
       <head>
@@ -67,7 +50,7 @@ export default function RootLayout({
           </main>
 
           {/* Footer */}
-          <Footer />
+          {variant !== 'simple' && <Footer />}
           
           {/* Floating Action Button - 전역 */}
           <FloatingActionButton />

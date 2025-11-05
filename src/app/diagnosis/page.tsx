@@ -35,7 +35,7 @@ export default function DiagnosisIntro() {
                   fontFamily: 'var(--font-title), sans-serif' 
                 }}
               >
-                7번의 터치로 끝내는<br />
+                5번의 터치로 끝내는<br />
                 <span className="text-primary">자가진단 테스트</span>
             </h1>
               
@@ -68,7 +68,7 @@ export default function DiagnosisIntro() {
             <div className="relative">
               {/* 배경 이미지 */}
               <Image
-                src="/images/diagnosis/start/diagnosis_start_1.webp"
+                src="/images/diagnosis/start/diagnosis_start_1_tmp.webp"
                 alt="자가진단 시작 이미지"
                 width={400}
                 height={600}

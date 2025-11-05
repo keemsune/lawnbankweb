@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Container } from '@/components/layout/Container'
 import { Button } from '@/components/ui/Button'
 import { TeamMemberCard } from '@/components/ui/TeamMemberCard'
@@ -20,6 +20,9 @@ const FEATURE_FLAGS = {
 }
 
 export default function ServicesPage() {
+  // variant 상태 관리
+  const [variant, setVariant] = useState<string | null>(null)
+  
   // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(1)
   
@@ -30,6 +33,12 @@ export default function ServicesPage() {
   const [consultationType, setConsultationType] = useState<'phone' | 'visit' | ''>('')
   const [contact, setContact] = useState('')
   const [residence, setResidence] = useState('')
+
+  // 컴포넌트 마운트 시 URL에서 variant 읽기
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setVariant(params.get('variant'));
+  }, []);
 
   // 상담신청 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
@@ -194,15 +203,15 @@ export default function ServicesPage() {
     },
     {
       id: 17,
-      name: "심샛별 대리",
-      department: "사건관리팀",
+      name: "심샛별 과장",
+      department: "법률컨설팅팀",
       contact: "070-4607-0053",
       image: "/images/intro/team_member/ssaetbyeol.webp"
     },
     {
       id: 18,
-      name: "황윤주 대리",
-      department: "사건관리팀",
+      name: "황윤주 과장",
+      department: "법률컨설팅팀",
       contact: "070-4607-1501",
       image: "/images/intro/team_member/hyunju.webp"
     },
@@ -222,8 +231,8 @@ export default function ServicesPage() {
     },
     {
       id: 21,
-      name: "김미진 대리",
-      department: "사건관리팀",
+      name: "김미진 과장",
+      department: "법률컨설팅팀",
       contact: "070-7706-5502",
       image: "/images/intro/team_member/kmijin.webp"
     },
@@ -278,8 +287,8 @@ export default function ServicesPage() {
     },
     {
       id: 29,
-      name: "박유은 대리",
-      department: "사건관리팀",
+      name: "박유은 과장",
+      department: "법률컨설팅팀",
       contact: "070-4607-4425",
       image: "/images/intro/team_member/pyueun.webp"
     },
@@ -341,8 +350,8 @@ export default function ServicesPage() {
     },
     {
       id: 38,
-      name: "신지용 대리",
-      department: "사건관리팀",
+      name: "신지용 과장",
+      department: "법률컨설팅팀",
       contact: "070-4607-1208",
       image: "/images/intro/team_member/sjiyong.webp"
     },
@@ -376,13 +385,6 @@ export default function ServicesPage() {
     },
     {
       id: 43,
-      name: "이연서 주임",
-      department: "사건관리팀",
-      contact: "070-4944-9969",
-      image: "/images/intro/team_member/lyeonseo.webp"
-    },
-    {
-      id: 44,
       name: "최우성 주임",
       department: "사건관리팀",
       contact: "070-4169-8171",
@@ -454,12 +456,44 @@ export default function ServicesPage() {
     }
   ]
 
+  // simple 페이지 전용 FAQ
+  const simpleFaqItems = [
+    {
+      id: 'faq-1',
+      question: '회생터치 서비스는 어떻게 이용하나요?',
+      answer: '회생터치 서비스는 자가진단을 통해 전문가와의 연결까지 돕는 서비스입니다.\n먼저 5번의 터치로 자가진단을 진행하고,\n축적된 데이터를 분석하여 상황에 맞는 해결 방향을 제시합니다.\n해결책을 충분히 파악하고 매칭된 법률전문가에게 직접 상담받고 절차를 진행할 수 있습니다.'
+    },
+    {
+      id: 'faq-2',
+      question: '회생터치 서비스는 도산전문 법무법인인가요?',
+      answer: '물론입니다.\n13년 이상의 회생파산 경력으로 대한변협에서 도산전문을 인증받은 로펌에서 진행하는 서비스입니다.\n도산전문 변호사와 오래된 경력으로 구성된 실무팀이 직접 사건을 분담하여 처리하며,\n의뢰인의 정보를 안전하게 보호하고 절차에 맞춰 사건을 진행합니다.'
+    },
+    {
+      id: 'faq-3',
+      question: '채무가 많아도 회생이나 파산이 가능한가요?',
+      answer: '회생파산 제도에서 채무액보다 중요한 건 소득, 지출, 자산, 부양가족 등 전체의 상황입니다.\n간단한 진단 후 데이터 분석을 통해 나의 상황에 적합한 해결방향이 무엇인지를 판단할 수 있습니다.\n그 후 전문가와 소통을 하며 적합한 제도와 해결방법을 안내해 드립니다.\n로앤은 수천 건의 해결사례가 있기에 다양한 상황도 수월하게 해결을 도와드릴 수 있습니다.'
+    },
+    {
+      id: 'faq-4',
+      question: '채권자에게 계속 연락이 오는데 어떻게 하나요?',
+      answer: '회생파산 절차를 시작하면 법적으로 추심이 중단됩니다.\n로앤과 사건을 진행하시게 되면 저희가 고객님 대신 대응해 드릴 수 있으니,\n모든 걱정은 로앤에게 맡겨주세요.'
+    },
+    {
+      id: 'faq-5',
+      question: '상담받으면 바로 사건을 맡겨야 하나요?',
+      answer: '아닙니다. 먼저 자가진단과 데이터 분석을 통해 본인의 상황을 정확히 파악하고,\n법률전문가가 진단 내용을 바탕으로 사건의 진행방향과 최적의 솔루션을 제공해 드립니다.\n충분한 상담과 소통을 통해 진행 여부를 결정하시면 되며,\n로앤은 고객님들께 무조건적인 수임을 권하지 않습니다.'
+    }
+  ]
+
   // 현재 사용할 FAQ 데이터 선택
-  const faqItems = FEATURE_FLAGS.USE_TEMP_COPY ? tempFaqItems : originalFaqItems
+  const faqItems = variant === 'simple' 
+    ? simpleFaqItems 
+    : (FEATURE_FLAGS.USE_TEMP_COPY ? tempFaqItems : originalFaqItems)
 
   return (
     <div>
       {/* 플로팅 탭 */}
+      {variant !== 'simple' && (
       <FloatingTab
         tabs={[
           { id: 'law-firm', label: '법무법인 로앤', targetIds: [
@@ -470,6 +504,7 @@ export default function ServicesPage() {
           ] }
         ]}
       />
+      )}
       
       {/* 섹션 1: 히어로 섹션 */}
       <section id="law-firm-section" className="relative py-14 md:py-28 overflow-hidden">
@@ -508,10 +543,21 @@ export default function ServicesPage() {
                 바탕으로 진행됩니다.
               </h1>
               <p className="text-heading-lg-css md:text-display-xs-css text-foreground">
-                법무법인 로앤은 설립 이후<br />
-                10배가 넘는 사건을 해결하며<br />
-                꾸준히 성장 중인<br />
-                회생파산 전문로펌 입니다.
+                {variant === 'simple' ? (
+                  <>
+                    수많은 사건 진행 경험을<br />
+                    데이터로 축적하여,<br />
+                    사건의 진행 방향을 예측하고<br />
+                    고객님께 최적의 해결방안을 제시합니다.
+                  </>
+                ) : (
+                  <>
+                    법무법인 로앤은 설립 이후<br />
+                    10배가 넘는 사건을 해결하며<br />
+                    꾸준히 성장 중인<br />
+                    회생파산 전문로펌 입니다.
+                  </>
+                )}
               </p>
             </div>
             
@@ -530,6 +576,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 섹션 2: 변호사 소개 */}
+      {variant !== 'simple' && (
       <section id="lawyer-section" className="bg-background py-14 md:py-28">
         <Container>
           {/* 가로 2단 구조: 좌측 사진, 우측 텍스트 */}
@@ -632,6 +679,7 @@ export default function ServicesPage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* 섹션 3: 차별화 서비스 */}
       <section id="differentiation-section" className="bg-emerald-900 py-14 md:py-28">
@@ -730,6 +778,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 섹션 4: 구성원 소개 */}
+      {variant !== 'simple' && (
       <section id="team-section" className="bg-background py-14 md:py-28">
         <Container>
           <div className="flex flex-col gap-10 md:gap-12">
@@ -778,6 +827,7 @@ export default function ServicesPage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* 섹션 5: 4단계 안내 */}
       {FEATURE_FLAGS.SHOW_STEP_SECTIONS && (

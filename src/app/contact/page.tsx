@@ -10,6 +10,15 @@ import Image from 'next/image'
 import NaverMap from '@/components/ui/NaverMap'
 
 export default function ContactPage() {
+  // variant 상태 관리
+  const [variant, setVariant] = useState<string | null>(null);
+
+  // 컴포넌트 마운트 시 URL에서 variant 읽기
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setVariant(params.get('variant'));
+  }, []);
+
   // 섹션2 간편상담신청 폼 상태
   const [consultationType, setConsultationType] = useState<'phone' | 'visit' | ''>('')
   const [contact, setContact] = useState('')
@@ -552,6 +561,7 @@ export default function ContactPage() {
       </section>
 
       {/* 섹션3: 오시는 길 */}
+      {variant !== 'simple' && (
       <section className="py-14 md:py-28 bg-background-1">
         <Container>
           <div className="text-center mb-8 md:mb-14">
@@ -654,15 +664,16 @@ export default function ContactPage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* 섹션4: CTA 섹션 */}
-      <section className="bg-gray-100 pt-14 pb-24">
+      <section className={`pt-14 pb-24 ${variant === 'simple' ? 'bg-background-1' : 'bg-gray-100'}`}>
         <Container>
           {/* CTA 콘텐츠 영역 - 가로 2단 구조 */}
           <div className="grid md:grid-cols-2 gap-4 md:gap-6">
             {/* 첫 번째 박스 */}
             <Link href="/diagnosis">
-              <div className="bg-card rounded-3xl px-8 py-6 md:px-10 md:py-8 shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+              <div className={`bg-card rounded-3xl px-8 py-6 md:px-10 md:py-8 shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${variant === 'simple' ? 'ring-1 ring-ring' : ''}`}>
                 <div className="flex items-center justify-between">
                   {/* 좌측: 세로 2단 텍스트 구조 */}
                   <div className="flex flex-col gap-2">
@@ -685,7 +696,7 @@ export default function ContactPage() {
 
             {/* 두 번째 박스 */}
             <Link href="/services">
-              <div className="bg-card rounded-3xl px-8 py-6 md:px-10 md:py-8 shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+              <div className={`bg-card rounded-3xl px-8 py-6 md:px-10 md:py-8 shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${variant === 'simple' ? 'ring-1 ring-ring' : ''}`}>
                 <div className="flex items-center justify-between">
                   {/* 좌측: 세로 2단 텍스트 구조 */}
                   <div className="flex flex-col gap-2">

@@ -10,12 +10,25 @@ import { ReviewCard, type ReviewData } from '@/components/ui/ReviewCard';
 import { ScrollPopup } from '@/components/ui/ScrollPopup';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
-// 기능 플래그 설정
-const FEATURE_FLAGS = {
+// 기본 기능 플래그 설정
+const DEFAULT_FEATURE_FLAGS = {
   SHOW_SUCCESS_CASES: false,        // 성공사례 섹션 표시 여부 (임시 블라인드)
   SHOW_ADVANTAGES: true,            // 회생터치 장점 섹션 표시 여부
   SHOW_REVIEWS: true,               // 고객후기 섹션 표시 여부
   USE_TEMP_COPY: true,              // 임시 카피 사용 여부 (7번→5번 터치)
+}
+
+// variant별 기능 플래그 설정
+const VARIANT_FLAGS: Record<string, Partial<typeof DEFAULT_FEATURE_FLAGS>> = {
+  // 플랫폼2용 simple 버전: 모든 섹션 표시
+  simple: {
+    SHOW_SUCCESS_CASES: false,
+    SHOW_ADVANTAGES: true,
+    SHOW_REVIEWS: true,
+    USE_TEMP_COPY: true,
+  },
+  // 필요시 다른 variant 추가 가능
+  // platform3: { ... }
 }
 
 // 임시 사례 데이터 (나중에 DB에서 가져올 예정) 
@@ -115,14 +128,25 @@ const mockReviewData: ReviewData[] = [
 ];
 
 export default function DevPage() {
+  // variant 상태 관리
+  const [variant, setVariant] = useState<string | null>(null);
+  
   // 랜덤 테스트 진행자 수 상태 (1~15 사이)
   const [currentTestUsers, setCurrentTestUsers] = useState<number>(0);
 
-  // 컴포넌트 마운트 시 랜덤 숫자 생성
+  // 컴포넌트 마운트 시 URL에서 variant 읽기
   useEffect(() => {
-    const randomNumber = Math.floor(Math.random() * 15) + 1; // 1~15 사이 랜덤 숫자
+    const params = new URLSearchParams(window.location.search);
+    setVariant(params.get('variant'));
+    
+    const randomNumber = Math.floor(Math.random() * 15) + 1;
     setCurrentTestUsers(randomNumber);
   }, []);
+
+  // variant에 따른 기능 플래그 설정
+  const FEATURE_FLAGS = variant && VARIANT_FLAGS[variant]
+    ? { ...DEFAULT_FEATURE_FLAGS, ...VARIANT_FLAGS[variant] }
+    : DEFAULT_FEATURE_FLAGS;
 
   return (
     <div>

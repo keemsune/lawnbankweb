@@ -35,12 +35,7 @@ export default function NaverMap({
     // 선택된 사무소의 좌표 가져오기
     const coordinates = officeCoordinates[office];
 
-    // 네이버 지도 스크립트 로드
-    const script = document.createElement('script');
-    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`;
-    script.async = true;
-    
-    script.onload = () => {
+    const initMap = () => {
       if (mapRef.current && window.naver) {
         const position = new window.naver.maps.LatLng(coordinates.lat, coordinates.lng);
         
@@ -87,19 +82,32 @@ export default function NaverMap({
         infoWindow.open(map, marker);
       }
     };
-    
-    document.head.appendChild(script);
+
+    // 네이버 지도 스크립트가 이미 로드되어 있는지 확인
+    if (window.naver && window.naver.maps) {
+      initMap();
+    } else {
+      // 네이버 지도 스크립트 로드
+      const script = document.createElement('script');
+      const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID || 'e0pqn00yb2';
+      script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}`;
+      script.async = true;
+      script.onload = initMap;
+      document.head.appendChild(script);
+    }
     
     return () => {
       // 클린업
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.destroy();
-      }
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
+      if (mapInstanceRef.current && mapInstanceRef.current.destroy) {
+        try {
+          mapInstanceRef.current.destroy();
+        } catch (e) {
+          console.error('Error destroying map:', e);
+        }
+        mapInstanceRef.current = null;
       }
     };
-  }, [office, placeName]);
+  }, [office, placeName, address]);
 
   return <div ref={mapRef} className={className} />;
 }
