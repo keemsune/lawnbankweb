@@ -125,6 +125,16 @@ export default function DiagnosisResult() {
         if (result.success) {
           console.log('상담 신청 정보가 성공적으로 저장되었습니다.');
           setContactSubmitted(true);
+          
+          // 네이버 전환 추적 (상담신청 완료)
+          if (typeof window !== 'undefined' && (window as any).wcs) {
+            if (!(window as any).wcs_add) (window as any).wcs_add = {};
+            (window as any).wcs_add['wa'] = 's_34e93dd69ca9';
+            const _conv = { type: 'lead' };
+            (window as any).wcs.trans(_conv);
+            console.log('✅ 네이버 전환 추적 완료 (진단 결과 페이지)');
+          }
+          
           alert(result.message || '상담 신청이 완료되었습니다!');
         } else {
           console.error('DB 업데이트 실패:', result.message);

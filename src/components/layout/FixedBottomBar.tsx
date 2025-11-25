@@ -67,6 +67,15 @@ export default function FixedBottomBar() {
 
       await DiagnosisDataManager.saveSimpleConsultation(consultationData, '하단바_상담신청');
       
+      // 네이버 전환 추적 (상담신청 완료)
+      if (typeof window !== 'undefined' && (window as any).wcs) {
+        if (!(window as any).wcs_add) (window as any).wcs_add = {};
+        (window as any).wcs_add['wa'] = 's_34e93dd69ca9';
+        const _conv = { type: 'lead' };
+        (window as any).wcs.trans(_conv);
+        console.log('✅ 네이버 전환 추적 완료 (하단바)');
+      }
+      
       alert('상담 신청이 완료되었습니다. 빠른 시일 내에 연락드리겠습니다.');
       
       // 폼 초기화
