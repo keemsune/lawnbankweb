@@ -174,10 +174,8 @@ export class SupabaseDiagnosisService {
    * DiagnosisRecordDB를 DiagnosisRecord로 변환
    */
   static convertToRecord(dbRecord: DiagnosisRecordDB): DiagnosisRecord {
-    // created_at을 UTC에서 KST로 변환 (+9시간)
-    const utcDate = new Date(dbRecord.created_at);
-    const kstDate = new Date(utcDate.getTime() + (9 * 60 * 60 * 1000));
-    const createdAtKST = kstDate.toISOString().replace('T', ' ').substring(0, 19);
+    // created_at을 그대로 사용 (이미 KST로 저장되어 있음)
+    const createdAtKST = dbRecord.created_at || new Date().toISOString();
     
     // debt_info의 기본 구조
     const defaultResult = {
