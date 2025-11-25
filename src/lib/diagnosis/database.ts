@@ -1,6 +1,7 @@
 // 진단 데이터 저장 및 관리 시스템
 
 import { CompleteDiagnosisData } from './service';
+import { supabase } from '@/lib/supabase/client';
 
 /**
  * 간편 상담 신청 데이터
@@ -320,34 +321,91 @@ export class DiagnosisDataManager {
     this.saveAllRecords(records);
     console.log('로컬 스토리지에 저장 완료');
     
-    // Supabase에도 저장 (서버 API를 통해)
+    // Supabase에도 저장 (재시도 3회)
     let supabaseId: string | undefined;
-    try {
-      console.log('🔄 Supabase 저장 시작 (서버 API 통해)...');
-      const response = await fetch('/api/supabase/saveRecord', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(record),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`서버 API 호출 실패: ${response.status}`);
+    const maxRetries = 3;
+    const retryDelay = 1000; // 1초
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Supabase 저장 시도 ${attempt}/${maxRetries}...`);
+        
+        const response = await fetch('/api/supabase/saveRecord', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(record),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          supabaseId = result.data.id;
+          console.log(`✅ Supabase 저장 성공! (${attempt}번째 시도) ID:`, supabaseId);
+          break; // 성공하면 루프 탈출
+          
+        } else {
+          throw new Error(result.error || 'Unknown error');
+        }
+        
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`❌ Supabase 저장 시도 ${attempt} 실패:`, errorMessage);
+        
+        // 마지막 시도에서도 실패한 경우
+        if (attempt === maxRetries) {
+          console.error('❌ Supabase 저장 최종 실패 (3회 시도)');
+          
+          // 에러 로그 저장
+          await this.logError({
+            errorType: 'supabase_save_failed',
+            consultationNumber: (record as any).contactInfo?.name || 'unknown',
+            customerPhone: (record as any).contactInfo?.phone || 'unknown',
+            customerResidence: (record as any).contactInfo?.residence || 'unknown',
+            acquisitionSource: record.acquisitionSource,
+            errorMessage: errorMessage,
+            errorDetails: {
+              recordId: record.id,
+              attempts: maxRetries,
+              lastError: error
+            },
+            retryCount: maxRetries
+          });
+          
+          // Slack 알림 전송
+          try {
+            await fetch('/api/slack/notify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'error',
+                customerName: (record as any).contactInfo?.name || 'unknown',
+                consultationType: (record as any).contactInfo?.consultationType || 'unknown',
+                acquisitionSource: record.acquisitionSource,
+                error: `Supabase 저장 실패 (3회 시도): ${errorMessage}`,
+                attempts: maxRetries,
+                phone: (record as any).contactInfo?.phone
+              })
+            });
+          } catch (slackError) {
+            console.error('Slack 알림 전송 실패:', slackError);
+          }
+          
+        } else {
+          // 재시도 전 대기
+          console.log(`⏳ ${retryDelay}ms 후 재시도...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
       }
-      
-      const result = await response.json();
-      if (result.success && result.data) {
-        supabaseId = result.data.id;
-        console.log('✅ Supabase 저장 성공! ID:', supabaseId);
-      } else {
-        console.error('❌ Supabase 저장 실패:', result.error);
-      }
-    } catch (error) {
-      console.error('❌ Supabase 저장 중 오류:', error);
-      // Supabase 저장 실패해도 로컬 저장은 성공으로 처리
     }
-    
+
+    // ⚠️ 중요: Supabase 저장 실패해도 사용자에게는 성공 메시지
+    // 이유: 홈페이지 API 등록은 성공했으므로 상담은 접수된 상태
     return { ...record, supabaseId };
   }
   
@@ -533,6 +591,7 @@ export class DiagnosisDataManager {
     }
     
     // 연락처 정보 업데이트
+    const conversionTime = new Date().toISOString();
     records[recordIndex].contactInfo.name = consultationName; // 회생터치 번호로 변경
     records[recordIndex].contactInfo.phone = phone;
     if (consultationType) {
@@ -541,9 +600,10 @@ export class DiagnosisDataManager {
     if (residence) {
       records[recordIndex].contactInfo.residence = residence;
     }
-    records[recordIndex].contactInfo.submittedAt = new Date().toISOString();
+    records[recordIndex].contactInfo.submittedAt = conversionTime;
     records[recordIndex].acquisitionSource = acquisitionSource;
-    records[recordIndex].updatedAt = new Date().toISOString();
+    records[recordIndex].createdAt = conversionTime; // 상담 전환 시점으로 업데이트
+    records[recordIndex].updatedAt = conversionTime;
     records[recordIndex].isDuplicate = duplicateInfo.isDuplicate;
     records[recordIndex].duplicateCount = duplicateInfo.duplicateCount;
     
@@ -558,6 +618,17 @@ export class DiagnosisDataManager {
       console.log('🔄 Supabase 업데이트 시작 (서버 API 통해)...');
       console.log('📝 업데이트할 ID:', recordId);
       
+      // 상담 전환 시점의 시간을 생성 (KST)
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+      const createdAt = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+09:00`;
+      
       const updateData = {
         id: recordId, // Supabase UUID
         customer_name: consultationName,
@@ -565,7 +636,8 @@ export class DiagnosisDataManager {
         residence: residence || records[recordIndex].contactInfo.residence,
         acquisition_source: acquisitionSource,
         is_duplicate: duplicateInfo.isDuplicate,
-        duplicate_count: duplicateInfo.duplicateCount
+        duplicate_count: duplicateInfo.duplicateCount,
+        created_at: createdAt // 상담 전환 시점으로 업데이트
       };
       
       const response = await fetch('/api/supabase/updateRecordByPhone', {
@@ -730,7 +802,7 @@ export class DiagnosisDataManager {
   /**
    * 통계 데이터 생성
    */
-  static getStatistics(): {
+  static getStatistics(records?: DiagnosisRecord[]): {
     total: number;
     byRecommendation: Record<string, number>;
     byReductionRate: Record<string, number>;
@@ -743,10 +815,10 @@ export class DiagnosisDataManager {
       conversionPercentage: number;
     };
   } {
-    const records = this.getAllRecords();
+    const recordsToUse = records || this.getAllRecords();
     
     const stats = {
-      total: records.length,
+      total: recordsToUse.length,
       byRecommendation: {} as Record<string, number>,
       byReductionRate: {} as Record<string, number>,
       byMonth: {} as Record<string, number>,
@@ -759,11 +831,11 @@ export class DiagnosisDataManager {
       }
     };
     
-    if (records.length === 0) return stats;
+    if (recordsToUse.length === 0) return stats;
     
     let totalReductionRate = 0;
     
-    records.forEach(record => {
+    recordsToUse.forEach(record => {
       // 추천 제도별 통계
       const rec = record.result.eligibility.recommendation;
       stats.byRecommendation[rec] = (stats.byRecommendation[rec] || 0) + 1;
@@ -803,7 +875,7 @@ export class DiagnosisDataManager {
       // 직접 상담신청(헤더, 서비스CTA, 문의페이지 등)은 전환율에서 완전히 제외
     });
     
-    stats.averageReductionRate = Math.round(totalReductionRate / records.length);
+    stats.averageReductionRate = Math.round(totalReductionRate / recordsToUse.length);
     
     // 전환율 계산
     if (stats.conversionRate.total > 0) {
@@ -859,35 +931,50 @@ export class DiagnosisDataManager {
   }
   
   /**
-   * 회생터치 번호 생성 (Supabase 기반 - 최대값 + 1 방식)
+   * 회생터치 번호 생성 (Supabase 시퀀스 기반 - 중복 불가)
    */
   private static async getNextConsultationNumberFromSupabase(): Promise<string> {
     try {
-      // Supabase에서 기존 레코드 가져오기
-      const { SupabaseDiagnosisService } = await import('@/lib/supabase/diagnosisService');
-      const allRecords = await SupabaseDiagnosisService.getAllRecords();
+      console.log('🔢 회생터치 번호 생성 시작 (시퀀스 기반)');
       
-      // "회생터치" 로 시작하는 모든 번호 추출
-      const existingNumbers = allRecords
-        .filter(record => record.customer_name && record.customer_name.startsWith('회생터치'))
-        .map(record => {
-          const name = record.customer_name!;
-          const numberPart = name.replace('회생터치', '');
-          return parseInt(numberPart, 10);
-        })
-        .filter(num => !isNaN(num) && num > 0);
+      // Supabase 함수 호출 (원자적 증가)
+      const { data, error } = await supabase.rpc('get_next_consultation_number');
       
-      // 최대값 찾기
-      const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
-      const nextNumber = maxNumber + 1;
+      if (error) {
+        console.error('❌ 번호 생성 실패:', error);
+        
+        // 에러 로그 저장
+        await this.logError({
+          errorType: 'number_generation_failed',
+          errorMessage: error.message,
+          errorDetails: error
+        });
+        
+        throw new Error(`번호 생성 실패: ${error.message}`);
+      }
       
-      console.log('🔢 회생터치 번호 생성 (Supabase):', `회생터치${nextNumber}`, '(기존 최대값:', maxNumber, ')');
-      return `회생터치${nextNumber}`;
+      const nextNumber = data;
+      const consultationName = `회생터치${nextNumber}`;
+      
+      console.log('✅ 회생터치 번호 생성 성공:', consultationName);
+      return consultationName;
+      
     } catch (error) {
-      console.error('❌ 회생터치 번호 생성 실패:', error);
-      // 실패시 1번부터 시작
-      console.log('⚠️ 백업 번호 사용: 회생터치1');
-      return '회생터치1';
+      console.error('❌ 회생터치 번호 생성 중 오류:', error);
+      
+      // 최후의 백업: 타임스탬프 기반 임시 번호
+      const timestamp = Date.now();
+      const tempName = `회생터치-임시-${timestamp}`;
+      console.warn('⚠️ 임시 번호 사용:', tempName);
+      
+      // 에러 로그
+      await this.logError({
+        errorType: 'number_generation_critical_failed',
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorDetails: { timestamp, tempName }
+      });
+      
+      return tempName;
     }
   }
   
@@ -1070,5 +1157,42 @@ export class DiagnosisDataManager {
     if (rate < 85) return '70-85%';
     if (rate < 95) return '85-95%';
     return '95-100%';
+  }
+
+  /**
+   * 에러 로그 저장 (Supabase)
+   */
+  private static async logError(errorData: {
+    errorType: string;
+    consultationNumber?: string;
+    customerPhone?: string;
+    customerResidence?: string;
+    acquisitionSource?: string;
+    errorMessage: string;
+    errorDetails?: any;
+    retryCount?: number;
+  }): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('consultation_error_logs')
+        .insert([{
+          error_type: errorData.errorType,
+          consultation_number: errorData.consultationNumber,
+          customer_phone: errorData.customerPhone,
+          customer_residence: errorData.customerResidence,
+          acquisition_source: errorData.acquisitionSource,
+          error_message: errorData.errorMessage,
+          error_details: errorData.errorDetails,
+          retry_count: errorData.retryCount || 0
+        }]);
+      
+      if (error) {
+        console.error('에러 로그 저장 실패:', error);
+      } else {
+        console.log('✅ 에러 로그 저장 성공');
+      }
+    } catch (err) {
+      console.error('에러 로그 저장 중 예외:', err);
+    }
   }
 }

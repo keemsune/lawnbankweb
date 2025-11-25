@@ -1,0 +1,199 @@
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// src/lib/diagnosis/database.ts 수정 사항
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ════════════════════════════════════════════════════════════
+// 1. 파일 상단에 supabase import 추가
+// ════════════════════════════════════════════════════════════
+
+import { supabase } from '@/lib/supabase/client';
+
+
+// ════════════════════════════════════════════════════════════
+// 2. getNextConsultationNumberFromSupabase 함수 완전 교체
+//    (기존: 878-906줄, 새 버전으로 교체)
+// ════════════════════════════════════════════════════════════
+
+/**
+ * 회생터치 번호 생성 (Supabase 시퀀스 기반 - 중복 불가)
+ */
+private static async getNextConsultationNumberFromSupabase(): Promise<string> {
+  try {
+    console.log('🔢 회생터치 번호 생성 시작 (시퀀스 기반)');
+    
+    // Supabase 함수 호출 (원자적 증가)
+    const { data, error } = await supabase.rpc('get_next_consultation_number');
+    
+    if (error) {
+      console.error('❌ 번호 생성 실패:', error);
+      
+      // 에러 로그 저장
+      await this.logError({
+        errorType: 'number_generation_failed',
+        errorMessage: error.message,
+        errorDetails: error
+      });
+      
+      throw new Error(`번호 생성 실패: ${error.message}`);
+    }
+    
+    const nextNumber = data;
+    const consultationName = `회생터치${nextNumber}`;
+    
+    console.log('✅ 회생터치 번호 생성 성공:', consultationName);
+    return consultationName;
+    
+  } catch (error) {
+    console.error('❌ 회생터치 번호 생성 중 오류:', error);
+    
+    // 최후의 백업: 타임스탬프 기반 임시 번호
+    const timestamp = Date.now();
+    const tempName = `회생터치-임시-${timestamp}`;
+    console.warn('⚠️ 임시 번호 사용:', tempName);
+    
+    // 에러 로그
+    await this.logError({
+      errorType: 'number_generation_critical_failed',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorDetails: { timestamp, tempName }
+    });
+    
+    return tempName;
+  }
+}
+
+
+// ════════════════════════════════════════════════════════════
+// 3. saveRecord 함수의 Supabase 저장 부분 교체
+//    (기존: 323-349줄, 재시도 + 에러 로깅 추가)
+// ════════════════════════════════════════════════════════════
+
+// Supabase에도 저장 (재시도 3회)
+let supabaseId: string | undefined;
+const maxRetries = 3;
+const retryDelay = 1000; // 1초
+
+for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  try {
+    console.log(`🔄 Supabase 저장 시도 ${attempt}/${maxRetries}...`);
+    
+    const response = await fetch('/api/supabase/saveRecord', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(record),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.success && result.data) {
+      supabaseId = result.data.id;
+      console.log(`✅ Supabase 저장 성공! (${attempt}번째 시도) ID:`, supabaseId);
+      break; // 성공하면 루프 탈출
+      
+    } else {
+      throw new Error(result.error || 'Unknown error');
+    }
+    
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ Supabase 저장 시도 ${attempt} 실패:`, errorMessage);
+    
+    // 마지막 시도에서도 실패한 경우
+    if (attempt === maxRetries) {
+      console.error('❌ Supabase 저장 최종 실패 (3회 시도)');
+      
+      // 에러 로그 저장
+      await this.logError({
+        errorType: 'supabase_save_failed',
+        consultationNumber: (record as any).contactInfo?.name || 'unknown',
+        customerPhone: (record as any).contactInfo?.phone || 'unknown',
+        customerResidence: (record as any).contactInfo?.residence || 'unknown',
+        acquisitionSource: record.acquisitionSource,
+        errorMessage: errorMessage,
+        errorDetails: {
+          recordId: record.id,
+          attempts: maxRetries,
+          lastError: error
+        },
+        retryCount: maxRetries
+      });
+      
+      // Slack 알림 전송
+      try {
+        await fetch('/api/slack/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'error',
+            customerName: (record as any).contactInfo?.name || 'unknown',
+            consultationType: (record as any).contactInfo?.consultationType || 'unknown',
+            acquisitionSource: record.acquisitionSource,
+            error: `Supabase 저장 실패 (3회 시도): ${errorMessage}`,
+            attempts: maxRetries,
+            phone: (record as any).contactInfo?.phone
+          })
+        });
+      } catch (slackError) {
+        console.error('Slack 알림 전송 실패:', slackError);
+      }
+      
+    } else {
+      // 재시도 전 대기
+      console.log(`⏳ ${retryDelay}ms 후 재시도...`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
+  }
+}
+
+// ⚠️ 중요: Supabase 저장 실패해도 사용자에게는 성공 메시지
+// 이유: 홈페이지 API 등록은 성공했으므로 상담은 접수된 상태
+return { ...record, supabaseId };
+
+
+// ════════════════════════════════════════════════════════════
+// 4. 새로운 유틸리티 함수 추가 (파일 끝부분에)
+// ════════════════════════════════════════════════════════════
+
+/**
+ * 에러 로그 저장 (Supabase)
+ */
+private static async logError(errorData: {
+  errorType: string;
+  consultationNumber?: string;
+  customerPhone?: string;
+  customerResidence?: string;
+  acquisitionSource?: string;
+  errorMessage: string;
+  errorDetails?: any;
+  retryCount?: number;
+}): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('consultation_error_logs')
+      .insert([{
+        error_type: errorData.errorType,
+        consultation_number: errorData.consultationNumber,
+        customer_phone: errorData.customerPhone,
+        customer_residence: errorData.customerResidence,
+        acquisition_source: errorData.acquisitionSource,
+        error_message: errorData.errorMessage,
+        error_details: errorData.errorDetails,
+        retry_count: errorData.retryCount || 0
+      }]);
+    
+    if (error) {
+      console.error('에러 로그 저장 실패:', error);
+    } else {
+      console.log('✅ 에러 로그 저장 성공');
+    }
+  } catch (err) {
+    console.error('에러 로그 저장 중 예외:', err);
+  }
+}
+

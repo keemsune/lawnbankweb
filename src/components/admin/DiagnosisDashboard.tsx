@@ -71,8 +71,8 @@ export default function DiagnosisDashboard({ className }: DiagnosisDashboardProp
       setTotal(filteredRecords.length);
       setTotalPages(Math.ceil(filteredRecords.length / pageSize));
       
-      // 통계 데이터도 로드
-      const stats = DiagnosisDataManager.getStatistics();
+      // 통계 데이터도 로드 (Supabase 데이터 사용)
+      const stats = DiagnosisDataManager.getStatistics(allRecords);
       console.log('통계 데이터:', stats);
       setStatistics(stats);
       

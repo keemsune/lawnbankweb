@@ -18,6 +18,18 @@ export class SupabaseDiagnosisService {
       console.log('🔍 직접 상담신청 여부:', isDirectConsultation);
       
       // DiagnosisRecord를 DiagnosisRecordDB 형식으로 변환
+      // created_at을 명시적으로 현재 서버 시간(KST, UTC+9)으로 설정
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+      // ISO 8601 형식 with timezone offset (KST = UTC+9)
+      const createdAt = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+09:00`;
+      
       const dbRecord = {
         customer_name: (record as any).contactInfo?.name || (record as any).customerName || null,
         phone: (record as any).contactInfo?.phone || (record as any).phone || null,
@@ -28,9 +40,11 @@ export class SupabaseDiagnosisService {
         debt_info: isDirectConsultation ? null : (record.result || (record as any).debtInfo || null),
         is_duplicate: record.isDuplicate || false,
         duplicate_count: record.duplicateCount || 0,
+        created_at: createdAt, // 명시적으로 현재 시간 지정 (KST)
       };
       
       console.log('🔍 Supabase 저장할 DB 레코드:', dbRecord);
+      console.log('⏰ 저장 시간 (KST):', createdAt);
 
       const { data, error } = await supabase
         .from('consultation_records')

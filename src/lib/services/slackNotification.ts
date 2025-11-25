@@ -223,14 +223,13 @@ export class SlackNotificationService {
    */
   private static getKSTTime(): string {
     const now = new Date();
-    const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // UTC + 9시간
     
-    const year = kstDate.getUTCFullYear();
-    const month = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(kstDate.getUTCDate()).padStart(2, '0');
-    const hours = String(kstDate.getUTCHours()).padStart(2, '0');
-    const minutes = String(kstDate.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(kstDate.getUTCSeconds()).padStart(2, '0');
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
     
     // 형식: 2025-10-30 13:22:45
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
