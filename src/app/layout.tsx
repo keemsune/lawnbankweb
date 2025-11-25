@@ -31,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
+        <title>회생터치 - 회생/파산 전문</title>
         <link 
           rel="preload" 
           href="https://fastly.jsdelivr.net/gh/projectnoonnu/2410-1@1.0/RiaSans-ExtraBold.woff2" 
