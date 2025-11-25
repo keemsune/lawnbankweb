@@ -39,6 +39,23 @@ export default function RootLayout({
           type="font/woff2" 
           crossOrigin="anonymous" 
         />
+        
+        {/* 네이버 광고 스크립트 */}
+        <script type="text/javascript" src="//wcs.naver.net/wcslog.js"></script>
+        <script 
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (!wcs_add) var wcs_add={};
+              wcs_add["wa"] = "s_34e93dd69ca9";
+              if (!_nasa) var _nasa={};
+              if(window.wcs){
+                wcs.inflow();
+                wcs_do();
+              }
+            `
+          }}
+        />
       </head>
       <body className={notoSansKR.className}>
         <div className="min-h-screen flex flex-col">
