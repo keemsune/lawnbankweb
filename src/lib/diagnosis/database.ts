@@ -618,17 +618,6 @@ export class DiagnosisDataManager {
       console.log('🔄 Supabase 업데이트 시작 (서버 API 통해)...');
       console.log('📝 업데이트할 ID:', recordId);
       
-      // 상담 전환 시점의 시간을 생성 (KST)
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-      const createdAt = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+09:00`;
-      
       const updateData = {
         id: recordId, // Supabase UUID
         customer_name: consultationName,
@@ -637,7 +626,7 @@ export class DiagnosisDataManager {
         acquisition_source: acquisitionSource,
         is_duplicate: duplicateInfo.isDuplicate,
         duplicate_count: duplicateInfo.duplicateCount,
-        created_at: createdAt // 상담 전환 시점으로 업데이트
+        // created_at은 업데이트하지 않음 (원래 시간 유지)
       };
       
       const response = await fetch('/api/supabase/updateRecordByPhone', {

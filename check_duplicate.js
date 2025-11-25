@@ -142,3 +142,4 @@ console.log('  - 이 스크립트는 브라우저 콘솔에서만 실행됩니�
 console.log('  - 관리자 대시보드 페이지에서 실행하는 것을 권장합니다.');
 console.log('  - 전화번호를 알고 있다면: checkHomepageAPI("010-1234-5678")');
 
+

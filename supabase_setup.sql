@@ -169,3 +169,4 @@ SELECT '✅ 다음 번호:', get_next_consultation_number();
 SELECT '✅ 에러 로그:', COUNT(*) FROM consultation_error_logs;
 SELECT '✅ 미해결 에러:', COUNT(*) FROM v_recent_errors;
 
+
