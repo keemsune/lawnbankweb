@@ -748,13 +748,13 @@ export class DiagnosisDataManager {
         debt: this.isDirectConsultation(record) ? '-' : (originalAnswers[6] || '-'),
         
         // 진단 결과 요약 (자가진단을 거치지 않은 경우 '-'로 표시)
-        recommendation: this.isDirectConsultation(record) ? '-' : (result.eligibility.recommendation === 'none' ? '-' : this.getRecommendationText(result.eligibility.recommendation)),
-        monthlyPayment36: this.isDirectConsultation(record) ? '-' : (result.monthlyPayment.period36 === 0 ? '-' : result.monthlyPayment.period36.toLocaleString() + '원'),
-        monthlyPayment60: this.isDirectConsultation(record) ? '-' : (result.monthlyPayment.period60 === 0 ? '-' : result.monthlyPayment.period60.toLocaleString() + '원'),
-        currentDebt: this.isDirectConsultation(record) ? '-' : (result.reductionRate.currentDebt === 0 ? '-' : result.reductionRate.currentDebt.toLocaleString() + '원'),
-        reducedDebt: this.isDirectConsultation(record) ? '-' : (result.reductionRate.reducedDebt === 0 ? '-' : result.reductionRate.reducedDebt.toLocaleString() + '원'),
-        reductionRate: this.isDirectConsultation(record) ? '-' : (result.reductionRate.percentage === 0 ? '-' : result.reductionRate.percentage + '%'),
-        comparison: this.isDirectConsultation(record) ? '-' : (result.reductionRate.comparison === 'low' && result.reductionRate.percentage === 0 ? '-' : this.getComparisonText(result.reductionRate.comparison)),
+        recommendation: this.isDirectConsultation(record) ? '-' : (result.eligibility?.recommendation === 'none' ? '-' : this.getRecommendationText(result.eligibility?.recommendation || 'none')),
+        monthlyPayment36: this.isDirectConsultation(record) ? '-' : (result.monthlyPayment?.period36 === 0 || !result.monthlyPayment?.period36 ? '-' : result.monthlyPayment.period36.toLocaleString() + '원'),
+        monthlyPayment60: this.isDirectConsultation(record) ? '-' : (result.monthlyPayment?.period60 === 0 || !result.monthlyPayment?.period60 ? '-' : result.monthlyPayment.period60.toLocaleString() + '원'),
+        currentDebt: this.isDirectConsultation(record) ? '-' : (result.reductionRate?.currentDebt === 0 || !result.reductionRate?.currentDebt ? '-' : result.reductionRate.currentDebt.toLocaleString() + '원'),
+        reducedDebt: this.isDirectConsultation(record) ? '-' : (result.reductionRate?.reducedDebt === 0 || !result.reductionRate?.reducedDebt ? '-' : result.reductionRate.reducedDebt.toLocaleString() + '원'),
+        reductionRate: this.isDirectConsultation(record) ? '-' : (result.reductionRate?.percentage === 0 || !result.reductionRate?.percentage ? '-' : result.reductionRate.percentage + '%'),
+        comparison: this.isDirectConsultation(record) ? '-' : (result.reductionRate?.comparison === 'low' && result.reductionRate?.percentage === 0 ? '-' : this.getComparisonText(result.reductionRate?.comparison || 'low')),
       
       status: this.getStatusText(record.status),
         acquisitionSource: this.getAcquisitionSourceText(record.acquisitionSource),
