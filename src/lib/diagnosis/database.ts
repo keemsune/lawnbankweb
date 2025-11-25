@@ -834,14 +834,23 @@ export class DiagnosisDataManager {
     if (recordsToUse.length === 0) return stats;
     
     let totalReductionRate = 0;
+    let validRecordsCount = 0;
     
     recordsToUse.forEach(record => {
+      // result 구조 확인
+      if (!record.result || !record.result.eligibility || !record.result.reductionRate) {
+        console.warn('레코드 구조 불완전:', record.id);
+        return;
+      }
+      
+      validRecordsCount++;
+      
       // 추천 제도별 통계
-      const rec = record.result.eligibility.recommendation;
+      const rec = record.result.eligibility.recommendation || '파산면책';
       stats.byRecommendation[rec] = (stats.byRecommendation[rec] || 0) + 1;
       
       // 탕감률별 통계
-      const rate = record.result.reductionRate.percentage;
+      const rate = record.result.reductionRate.percentage || 0;
       const rateRange = this.getReductionRateRange(rate);
       stats.byReductionRate[rateRange] = (stats.byReductionRate[rateRange] || 0) + 1;
       totalReductionRate += rate;
@@ -875,7 +884,7 @@ export class DiagnosisDataManager {
       // 직접 상담신청(헤더, 서비스CTA, 문의페이지 등)은 전환율에서 완전히 제외
     });
     
-    stats.averageReductionRate = Math.round(totalReductionRate / recordsToUse.length);
+    stats.averageReductionRate = validRecordsCount > 0 ? Math.round(totalReductionRate / validRecordsCount) : 0;
     
     // 전환율 계산
     if (stats.conversionRate.total > 0) {

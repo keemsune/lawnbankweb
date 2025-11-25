@@ -186,6 +186,19 @@ export class SupabaseDiagnosisService {
    * DiagnosisRecordDB를 DiagnosisRecord로 변환
    */
   static convertToRecord(dbRecord: DiagnosisRecordDB): DiagnosisRecord {
+    // debt_info의 기본 구조
+    const defaultResult = {
+      eligibility: {
+        recommendation: '파산면책',
+        reasons: []
+      },
+      reductionRate: {
+        percentage: 0,
+        reducedAmount: 0,
+        monthlyPayment: 0
+      }
+    };
+    
     const record: any = {
       id: dbRecord.id,
       createdAt: dbRecord.created_at,
@@ -203,7 +216,7 @@ export class SupabaseDiagnosisService {
       },
       originalAnswers: dbRecord.test_answers || {},
       codedAnswers: {},
-      result: dbRecord.debt_info || {},
+      result: dbRecord.debt_info || defaultResult,
       summary: {
         eligibilityText: '',
         paymentText: '',

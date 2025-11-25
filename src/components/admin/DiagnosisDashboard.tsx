@@ -72,9 +72,27 @@ export default function DiagnosisDashboard({ className }: DiagnosisDashboardProp
       setTotalPages(Math.ceil(filteredRecords.length / pageSize));
       
       // 통계 데이터도 로드 (Supabase 데이터 사용)
-      const stats = DiagnosisDataManager.getStatistics(allRecords);
-      console.log('통계 데이터:', stats);
-      setStatistics(stats);
+      try {
+        const stats = DiagnosisDataManager.getStatistics(allRecords);
+        console.log('통계 데이터:', stats);
+        setStatistics(stats);
+      } catch (statsError) {
+        console.error('통계 계산 중 오류:', statsError);
+        // 기본 통계 설정
+        setStatistics({
+          total: allRecords.length,
+          byRecommendation: {},
+          byReductionRate: {},
+          byMonth: {},
+          averageReductionRate: 0,
+          conversionRate: {
+            total: 0,
+            test: 0,
+            converted: 0,
+            conversionPercentage: 0
+          }
+        });
+      }
       
       console.log('=== 데이터 로드 완료 ===');
     } catch (error) {
