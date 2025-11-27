@@ -31,7 +31,28 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <title>회생터치 - 회생/파산 전문</title>
+        {/* 기본 메타 태그 */}
+        <title>회생터치 - 회생파산 전문 법무법인 로앤</title>
+        <meta name="description" content="5번의 터치로 찾는 나만의 채무 해결책. 개인회생 개인파산 13년 경력 전문 변호사." />
+        
+        {/* Open Graph (카카오톡, 페이스북 등) */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="회생터치" />
+        <meta property="og:title" content="회생터치 - 회생파산 전문 법무법인 로앤" />
+        <meta property="og:description" content="5번의 터치로 찾는 나만의 채무 해결책. 개인회생 개인파산 13년 경력 전문 변호사." />
+        <meta property="og:url" content="https://revivetouchlaw.com" />
+        <meta property="og:image" content="https://revivetouchlaw.com/images/main/hero/main_hero_1.webp" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="ko_KR" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="회생터치 - 회생파산 전문 법무법인 로앤" />
+        <meta name="twitter:description" content="5번의 터치로 찾는 나만의 채무 해결책. 개인회생 개인파산 13년 경력 전문 변호사." />
+        <meta name="twitter:image" content="https://revivetouchlaw.com/images/main/hero/main_hero_1.webp" />
+        
+        {/* 폰트 프리로드 */}
         <link 
           rel="preload" 
           href="https://fastly.jsdelivr.net/gh/projectnoonnu/2410-1@1.0/RiaSans-ExtraBold.woff2" 
