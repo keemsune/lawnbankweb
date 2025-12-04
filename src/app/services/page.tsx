@@ -378,20 +378,27 @@ export default function ServicesPage() {
     },
     {
       id: 42,
+      name: "이서영 주임",
+      department: "사건관리팀",
+      contact: "070-4607-0085",
+      image: "/images/intro/team_member/lseoyoung.webp"
+    },
+    {
+      id: 43,
       name: "최우성 주임",
       department: "사건관리팀",
       contact: "070-4169-8171",
       image: "/images/intro/team_member/cwoosung.webp"
     },
     {
-      id: 43,
+      id: 44,
       name: "강혜연 주임",
       department: "사건관리팀",
       contact: "070-4494-9969",
       image: "/images/intro/team_member/khyeyeon.webp"
     },
     {
-      id: 44,
+      id: 45,
       name: "서화영 주임",
       department: "사건관리팀",
       contact: "070-4494-9973",
