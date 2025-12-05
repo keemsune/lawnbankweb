@@ -392,17 +392,38 @@ export default function ServicesPage() {
     },
     {
       id: 44,
+      name: "김동화 주임",
+      department: "사건관리팀",
+      contact: "070-4607-4427",
+      image: "/images/intro/team_member/kdonghwa.webp"
+    },
+    {
+      id: 45,
       name: "강혜연 주임",
       department: "사건관리팀",
       contact: "070-4494-9969",
       image: "/images/intro/team_member/khyeyeon.webp"
     },
     {
-      id: 45,
+      id: 46,
       name: "서화영 주임",
       department: "사건관리팀",
       contact: "070-4494-9973",
       image: "/images/intro/team_member/shwayoung.webp"
+    },
+    {
+      id: 47,
+      name: "김효준 주임",
+      department: "사건관리팀",
+      contact: "070-4607-5258",
+      image: "/images/intro/team_member/khyojun.webp"
+    },
+    {
+      id: 48,
+      name: "도현진 주임",
+      department: "사건관리팀",
+      contact: "070-4607-5220",
+      image: "/images/intro/team_member/dhyunjin.webp"
     }
   ]
 
